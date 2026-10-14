@@ -167,4 +167,4 @@ body:has(.rc-luxus) .nav a, body:has(.rc-luxus) .brand { color: #f4ecdc; }
 
 .rc-luxus .rc-brand, .rc-luxus .rc-stage:has(.rc-photo) .rc-brand { top: 10.5%; font-size: clamp(38px, 5.2vw, 92px); }
 .rc-luxus .rc-hint { top: auto; bottom: 18px; left: auto; right: 24px; transform: none; z-index: 5; }
-@media (max-width: 760px) { .rc-luxus .rc-hint { display: none; } .rc-luxus .rc-brand { top: 13%; } }
+@media (max-width: 760px) { .rc-luxus .rc-hint { display: none; } .rc-luxus .rc-brand, .rc-luxus .rc-stage:has(.rc-photo) .rc-brand { top: 15.5%; font-size: 34px; } }
