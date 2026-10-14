@@ -396,3 +396,6 @@ main { min-height: 100vh; }
 
 .nav.scrolled { background: rgba(var(--surface-rgb), .85); }
 [hidden] { display: none !important; }
+/* szolgáltatónál a csoport-kártya alján a terem képe */
+.brand-card .brand-cover { margin: auto -30px -30px; margin-top: 22px; height: 150px; background-size: cover; background-position: center; border-top: 1px solid rgba(var(--accent-rgb), .25); transition: transform .6s var(--ease); }
+.brand-card:hover .brand-cover { transform: scale(1.04); }

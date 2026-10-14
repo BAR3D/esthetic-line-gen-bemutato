@@ -138,3 +138,12 @@ LAYOUTS.recepcio = function () {
     ${C.quote ? `<section class="sec wrap rc-quote"><p data-split="w">${fill(C.quote)}</p></section>` : ''}
   </div>`;
 };
+
+// minden aloldalon (nem csak a főoldalon): logó-betű a menüben; a „termek” és a „csoportok” fül kikerül a menüből,
+// mert a recepción a termek pontosan ezt adják (az oldalak a termekből és a linkekről továbbra is elérhetők)
+(function rcGlobal() {
+  const go = () => { if (typeof C === 'undefined' || C.layout !== 'recepcio') return;
+    if (C.logo) $$('.brand-mark').forEach((m) => { m.textContent = C.logo.betu || ''; m.classList.add('rc-lg'); });
+    if (!(C.recepcio && C.recepcio.teljesMenu)) $$('#navLinks a').forEach((a) => { const h = (a.getAttribute('href') || '').slice(2); if (h === 'markak' || h === (typeof NR !== 'undefined' ? NR : '')) a.remove(); }); };
+  let n = 0; const iv = setInterval(() => { go(); if (++n > 40) clearInterval(iv); }, 150); window.addEventListener('hashchange', () => setTimeout(go, 0));   // a config később töltődik be – addig újrapróbálja
+})();

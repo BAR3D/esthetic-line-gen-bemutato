@@ -30,6 +30,8 @@ const lineFt = (price, q) => price ? ft(price * q) : L_('priceOnRequest', 'Egyed
 const needsChoice = p => p.options && p.options.length > 0;
 const brandKey = n => BRANDS.find(b => b.name === n)?.k;
 const has = (p, list) => p.cats.some(c => list.includes(c));
+const lineList = b => { const n = (C.needs || []).find(x => x.k === b.k); return S.products.filter(p => p.brand === b.name || (n && n.cats && has(p, n.cats))); };   // szolgáltatónál a sor = a terem kategóriái
+const lineCover = b => { const n = (C.needs || []).find(x => x.k === b.k); return n && n.img ? img(n.img) : ''; };
 const skinOf = k => SKINS.find(s => s.k === k);
 const typeOf = k => TYPES.find(s => s.k === k);
 const pimg = p => (p.images && p.images[0]) || C.fallbackImg;
@@ -318,7 +320,7 @@ function home() {
     ${head(num(), L.linesTitle, L.linesSub, '<a class="link-more" href="#/markak">Mind →</a>')}
     <div class="brands">${BRANDS.map(b => { const ps = P.filter(p => p.brand === b.name); return `
       <a class="brand-card glass rv" href="#/marka/${b.k}"><span class="sec-num">${ps.length} ${L_('itemWord', 'termék')}</span><h3>${esc(b.name)}</h3><p>${esc(b.tag)}</p>
-      <div class="imgs">${ps.slice(0, 5).map(p => `<img src="${pimg(p)}" alt="" loading="lazy">`).join('')}</div></a>`; }).join('')}</div>
+      ${li ? `<div class="brand-cover" style="background-image:url(${li})"></div>` : `<div class="imgs">${ps.slice(0, 5).map(p => `<img src="${pimg(p)}" alt="" loading="lazy">`).join('')}</div>`}</a>`; }).join('')}</div>
   </section>` : ''}
 
   ${C.ritual && C.ritual.steps.length ? `<section class="sec wrap">
@@ -493,7 +495,7 @@ function skinPage(k) {
 
 function brandsPage() {
   return `<section class="page wrap"><div class="page-head rv"><span class="sec-num">${C.labels.linesNav}</span><h1>${C.labels.linesTitle}</h1><p>${C.labels.linesSub}</p></div>
-    <div class="brands">${BRANDS.map(b => { const ps = S.products.filter(p => p.brand === b.name); return `
+    <div class="brands">${BRANDS.map(b => { const ps = lineList(b), li = lineCover(b); return `
       <a class="brand-card glass rv" href="#/marka/${b.k}"><span class="sec-num">${ps.length} ${L_('itemWord', 'termék')}</span><h3>${esc(b.name)}</h3><p>${esc(b.tag)}</p>
       <div class="imgs">${ps.slice(0, 5).map(p => `<img src="${pimg(p)}" alt="" loading="lazy">`).join('')}</div></a>`; }).join('')}</div></section>`;
 }
@@ -502,7 +504,7 @@ function brandPage(k) {
   const b = BRANDS.find(x => x.k === k);
   if (!b) return notFound();
   const paras = lineParas(b), imgs = lineImages(b);
-  const list = S.products.filter(p => p.brand === b.name).sort((a, c) => c.inStock - a.inStock);
+  const list = lineList(b).sort((a, c) => c.inStock - a.inStock);
   return `<section class="page wrap">
     <div class="page-head rv"><span class="sec-num">${C.labels.linesNav} · ${list.length} ${L_('itemWord', 'termék')}</span><h1>${esc(b.name)}</h1><p>${esc(b.tag)}</p></div>
     ${paras.length ? `<div class="box glass prose rv" style="margin-bottom:26px">${paras.slice(0, 4).map(t => `<p>${esc(t)}</p>`).join('')}</div>` : ''}

@@ -22,7 +22,7 @@ const LX = {
   hero: () => img(C.hero.image || ('media/' + C.hero.media + '.jpg')),
   scenes: () => [...new Set([...(C.scenes || []).map((n) => (n.includes('/') ? n : 'media/' + n + '.jpg')), ...SKINS.map((s) => s.img)].filter(Boolean))],
   needN: (s) => S.products.filter((p) => has(p, s.cats)).length,
-  lineP: (b) => S.products.filter((p) => p.brand === b.name),
+  lineP: (b) => (typeof lineList === 'function' ? lineList(b) : S.products.filter((p) => p.brand === b.name)),
   tile: (p, cls = '') => `<a class="lx-tile ${cls}" href="#/termek/${p.slug}"><span class="lx-ti"><img src="${pimg(p)}" alt="" loading="lazy"></span><span class="lx-tt"><small>${esc(p.brand)}</small><b>${esc(p.name)}</b><em>${pft(p)}</em></span></a>`,
   cta: () => `<a class="btn btn-gold" href="#/${NR}">${fill(C.hero.cta)}</a><a class="btn btn-ghost" href="#/termekek">${L_('itemsNav', 'Termékek')}</a>`,
   rings(list) { setTimeout(() => $$('.ring-slot[data-lx]').forEach((el) => ring(el, { auto: true }).set(list[+el.dataset.lx] || []))); },
