@@ -12,6 +12,12 @@ LAYOUTS.recepcio = function () {
   const rooms = SKINS.slice(0, 8), N = rooms.length || 1;
   const list = (s) => S.products.filter((p) => has(p, s.cats)).sort((a, b) => (b.price > 0) - (a.price > 0));   // a szalon saját sorrendje marad (a kiemelt kezelések elöl)
   const tel = (C.contact && C.contact.phone) || '';
+  // a csapat (C.csapat): ki melyik teremben dolgozik – a szemben lévő terem előtt és a terem belsejében is megjelenik
+  const csap = (i) => (C.csapat || []).filter((m) => rooms[i] && (m.termek || []).includes(rooms[i].k));
+  const mono = (n) => esc(String(n).split(/\s+/).map((w) => w[0]).slice(0, 2).join(''));
+  const kartya = (m) => `<article class="rc-tm"><span class="rc-tm-av">${m.kep ? `<img src="${img(m.kep)}" alt="${esc(m.nev)}">` : mono(m.nev)}</span><div class="rc-tm-b"><b>${esc(m.nev)}</b><small>${esc(m.szerep || '')}</small>
+      <span class="rc-tm-sz">${(m.szak || []).slice(0, 3).map((x) => `<i>${esc(x)}</i>`).join('')}</span><p>„${esc(m.idezet || '')}”</p>
+      <span class="rc-tm-ft"><button type="button" class="rc-tm-more">Tovább ›</button>${m.tel ? `<a href="${telHref(m.tel)}">Bejelentkezés: ${esc(m.tel)}</a>` : m.web ? `<a href="https://${esc(m.web)}" target="_blank" rel="noopener">Bejelentkezés: ${esc(m.web)}</a>` : ''}</span></div></article>`;
   const fontLoad = () => { const f = window.A5F && A5F[C.alapBetu || 'cormorant']; if (f && !document.getElementById('rcFont')) { const l = document.createElement('link'); l.id = 'rcFont'; l.rel = 'stylesheet'; l.href = `https://fonts.googleapis.com/css2?family=${f[1]}&display=swap`; document.head.appendChild(l); document.body.style.setProperty('--serif', `"${f[0]}", Georgia, serif`); } };
 
   const tema = (C.recepcio && C.recepcio.tema) || 'vilagos', lux = tema === 'luxus';
@@ -52,6 +58,14 @@ LAYOUTS.recepcio = function () {
         g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; });
     }
     const R = () => Math.max(380, Math.min(innerWidth * 0.5, 820));
+    const team = $('.rc-team', stage); let lastTeam = -1;
+    const place = () => { if (!team) return; const sr = stage.getBoundingClientRect(), sg = $('.rc-room.front .rc-sign', stage), dk = $('.rc-desk', stage); if (!sg || !dk) return;
+      const top = sg.getBoundingClientRect().bottom - sr.top + 28, bot = dk.getBoundingClientRect().top - sr.top - 18;
+      team.style.top = top + 'px'; team.style.height = Math.max(0, bot - top) + 'px'; team.classList.toggle('fit', bot - top > 150 && innerWidth > 760); };
+    const showTeam = (i) => { if (!team) return; const L = csap(i); team.classList.remove('in'); FX.later(() => { team.innerHTML = L.length ? `<span class="rc-team-h">${esc(rooms[i].name)} · itt dolgozik</span><div class="rc-team-row">${L.map(kartya).join('')}</div>` : ''; place(); requestAnimationFrame(() => team.classList.add('in')); }, 220); };
+    FX.on(window, 'resize', place); FX.every(place, 700);
+    // „Tovább”: a teljes bemutatkozás kinyílik (a recepción és a terem belsejében is)
+    FX.on(document, 'click', (e) => { const b = e.target.closest('.rc-tm-more'); if (!b) return; const a = b.closest('.rc-tm'); a.classList.toggle('open'); b.textContent = a.classList.contains('open') ? 'Kevesebb ‹' : 'Tovább ›'; });
     panels.forEach((p, i) => p.style.setProperty('--a', (i * 360) / N + 'deg'));
     let ang = 0, target = 0, drag = false, lx = 0, moved = 0, zoom = 0, zt = 0, focus = -1;
     const norm = (a) => ((a % 360) + 360) % 360;
@@ -73,6 +87,7 @@ LAYOUTS.recepcio = function () {
       $('.rc-open-in', room).innerHTML = `<button class="rc-back" type="button">← Vissza a recepcióra</button>
         <span class="rc-kick">${String(i + 1).padStart(2, '0')} · ${esc(C.name)}</span><h2>${esc(s.name)}</h2><p class="rc-lead">${esc(s.d || '')}</p>
         <div class="rc-menu">${L.map((p, k) => `<a href="#/termek/${p.slug}" style="--d:${Math.min(k, 14) * 40}ms"><span><b>${esc(p.name)}</b>${p.summary ? `<small>${esc(String(p.summary).slice(0, 90))}</small>` : ''}</span><i></i><em>${pft(p)}</em></a>`).join('') || '<p class="muted">Ehhez a teremhez most egyedi ajánlatot adunk – kérdezz a recepción.</p>'}</div>
+        ${csap(i).length ? `<div class="rc-team-in"><h3>Akik itt várnak</h3>${csap(i).map(kartya).join('')}</div>` : ''}
         <div class="rc-cta">${tel ? `<a class="btn btn-gold" href="${telHref(tel)}">Bejelentkezés: ${esc(tel)}</a>` : ''}<a class="btn btn-ghost" href="#/kapcsolat">Írj nekünk</a></div>`;
       FX.later(() => { room.classList.add('on'); document.body.classList.add('rc-in'); FX.on($('.rc-back', room), 'click', close); }, FX.reduce ? 0 : 520);
     };
@@ -92,6 +107,7 @@ LAYOUTS.recepcio = function () {
       const front = Math.round(norm(ang) / (360 / N)) % N;
       panels.forEach((p, i) => p.classList.toggle('front', i === front));
       chips.forEach((c, i) => c.classList.toggle('on', i === front));
+      if (front !== lastTeam) { lastTeam = front; showTeam(front); }
     });
   });
 
@@ -101,6 +117,7 @@ LAYOUTS.recepcio = function () {
       <div class="rc-scene"><div class="rc-ring">
         ${rooms.map((s, i) => `<a class="rc-room" href="#/${NR}/${s.k}" draggable="false"><span class="rc-arch" style="background-image:url(${s.img})"></span><span class="rc-sign"><small>${String(i + 1).padStart(2, '0')}</small><b>${esc(s.name)}</b><em>${LX.needN(s)} ${L_('itemWord', 'kezelés')} · belépek →</em></span><span class="rc-glow"></span></a>`).join('')}
       </div></div>
+      <div class="rc-team" aria-live="polite"></div>
       <div class="rc-desk"><span class="rc-avatar" aria-hidden="true"></span><div><small>RECEPCIÓ · ${esc(C.name)}</small><p>${esc(C.recepcio && C.recepcio.koszones || 'Szép napot! Örülünk, hogy itt vagy. Merre kísérhetünk?')}</p>
         <div class="rc-chips">${rooms.map((s, i) => `<button class="rc-chip" type="button" data-i="${i}">${esc(s.name)}</button>`).join('')}</div>
         <div class="rc-deskcta"><button class="btn btn-gold" type="button" data-open="0">Belépek: ${esc(rooms[0] ? rooms[0].name : '')} →</button>${tel ? `<a class="btn btn-ghost" href="${telHref(tel)}">${esc(tel)}</a>` : ''}</div></div></div>
