@@ -257,3 +257,5 @@ body:has(.rc-luxus) .nav { backdrop-filter: none !important; -webkit-backdrop-fi
 .rc-doors i .rc-medal, .rc-luxus .rc-doors i .rc-medal { top: 40%; background: radial-gradient(circle at 38% 30%, #2a2418, #0c0b08 70%); }
 .rc-vilagos .rc-doors i .rc-medal { background: radial-gradient(circle at 38% 30%, #fff, #f1ebe0 70%); }
 @media (max-width: 760px) { .rc-doors i .rc-medal { top: 34%; } }
+/* a szárnyak 50,5%-osak (1% átfedés) – az érem két fele pontosan a lap közepére kerül, így az átfedésben fedésben vannak */
+.rc-doors .l .rc-medal { right: calc(0.990099% - var(--m) / 2); } .rc-doors .r .rc-medal { left: calc(0.990099% - var(--m) / 2); }
