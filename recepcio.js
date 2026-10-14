@@ -5,8 +5,22 @@
 
 window.LAYOUT_META5 = {
   recepcio: { name: 'Recepció', desc: 'Megérkezel a szalon recepciójára: körbenézel a 3D térben, a termek közül választasz, belépve kezelések és árak.', light: true, shopView: 'racs' },
+  'recepcio-arany': { name: 'Recepció – Arany', desc: 'Mentett stílus (Esthetic Line, 2026-10-14): sötét luxus, fekete márvány, arany fények és aranypor, logó-érmes ajtó, legördülő recepciós pult.', light: false, shopView: 'racs' },
+  'recepcio-pezsgo': { name: 'Recepció – Pezsgő', desc: 'Világos, napfényes szalon: elefántcsont, pezsgő és rozéarany, levegős fények – ugyanaz az ajtós, 3D-termes érkezés.', light: true, shopView: 'racs' },
+  'recepcio-ejkek': { name: 'Recepció – Éjkék', desc: 'Futurisztikus klinika: éjkék üveg, türkiz és ibolya neonfény, hideg fénypor – modern esztétika és technológia.', light: false, shopView: 'racs' },
+};
+// a Recepció stílusai – mind ugyanaz a felépítés (ajtó, 3D termek, csapat, pult), csak a színvilág és a fények mások
+window.RC_TEMAK = {
+  arany:  { name: 'Recepció – Arany', desc: 'Sötét luxus: fekete márvány, arany fények, aranypor, logó-érmes ajtó. (Mentett stílus: Esthetic Line, 2026-10-14.)', dark: true, blend: 'lighter',
+            por: { mag: '255,250,230', k1: '255,236,170', k2: '240,196,95', k3: '226,170,70', b1: '255,214,140', b2: '255,200,110', csill: '255,250,235', csill0: '255,240,200' } },
+  pezsgo: { name: 'Recepció – Pezsgő', desc: 'Világos, napfényes szalon: elefántcsont, pezsgő és rozéarany, levegős, nyugodt fények.', dark: false, blend: 'source-over',
+            por: { mag: '255,252,246', k1: '236,200,176', k2: '214,160,130', k3: '196,140,112', b1: '240,214,196', b2: '226,190,168', csill: '255,255,255', csill0: '245,225,210' } },
+  ejkek:  { name: 'Recepció – Éjkék', desc: 'Futurisztikus klinika: éjkék üveg, türkiz és ibolya neonfény, hideg fénypor – modern esztétika, technológia.', dark: true, blend: 'lighter',
+            por: { mag: '235,252,255', k1: '160,240,255', k2: '80,210,235', k3: '120,110,255', b1: '110,200,255', b2: '150,120,255', csill: '240,252,255', csill0: '170,235,255' } },
 };
 Object.assign(window.LAYOUT_META, window.LAYOUT_META5);
+window.rcTema = () => { const ly = (typeof LY === 'function' ? LY() : (typeof C !== 'undefined' && C.layout)) || ''; const k = String(ly).replace(/^recepcio-?/, '');
+  if (window.RC_TEMAK[k]) return k; const t = typeof C !== 'undefined' && C.recepcio && C.recepcio.tema; return t === 'luxus' ? 'arany' : (window.RC_TEMAK[t] ? t : 'vilagos'); };
 
 LAYOUTS.recepcio = function () {
   const rooms = SKINS.slice(0, 8), N = rooms.length || 1;
@@ -21,11 +35,11 @@ LAYOUTS.recepcio = function () {
       <span class="rc-tm-ft"><button type="button" class="rc-tm-more">Tovább ›</button>${m.tel ? `<a href="${telHref(m.tel)}">Bejelentkezés: ${esc(m.tel)}</a>` : m.web ? `<a href="https://${esc(m.web)}" target="_blank" rel="noopener">Bejelentkezés: ${esc(m.web)}</a>` : ''}</span></div></article>`;
   const fontLoad = () => { const f = window.A5F && A5F[C.alapBetu || 'cormorant']; if (f && !document.getElementById('rcFont')) { const l = document.createElement('link'); l.id = 'rcFont'; l.rel = 'stylesheet'; l.href = `https://fonts.googleapis.com/css2?family=${f[1]}&display=swap`; document.head.appendChild(l); document.body.style.setProperty('--serif', `"${f[0]}", Georgia, serif`); } };
 
-  const tema = (C.recepcio && C.recepcio.tema) || 'vilagos', lux = tema === 'luxus';
+  const tema = rcTema(), TM = RC_TEMAK[tema] || null, lux = !!TM, PC = TM ? TM.por : RC_TEMAK.arany.por;   // lux = a „luxus” szerkezet (aranypor, fénycsóvák, neonív) – mindhárom stílusnál
   window.__lx2Intro = true;   // a saját ajtós érkezés váltja ki az általános nyitófüggönyt
   lx2Start(() => {
     fontLoad();
-    if (lux) document.body.classList.remove('light');   // a sötét luxus téma a saját színeit használja
+    if (TM && TM.dark) document.body.classList.remove('light');   // a sötét luxus téma a saját színeit használja
     if (LG) $$('.brand-mark').forEach((m) => { m.textContent = LG.betu || ''; m.classList.add('rc-lg'); });
     const stage = $('.rc-stage'), ring = $('.rc-ring'), doors = $('.rc-doors'), panels = $$('.rc-room'), chips = $$('.rc-chip'), room = $('.rc-open'); if (!stage) return;
     // érkezés: az ajtó szétnyílik
@@ -41,14 +55,14 @@ LAYOUTS.recepcio = function () {
       const fitC = () => { const r = stage.getBoundingClientRect(), d = 1; c.width = r.width * d; c.height = r.height * d; c.style.width = r.width + 'px'; c.style.height = r.height + 'px'; c._d = d; };
       fitC(); FX.on(window, 'resize', fitC);
       const sprite = (sz, star) => { const o = document.createElement('canvas'); o.width = o.height = sz; const x = o.getContext('2d'), h = sz / 2;
-        let gr = x.createRadialGradient(h, h, 0, h, h, h); gr.addColorStop(0, 'rgba(255,250,230,1)'); gr.addColorStop(0.08, 'rgba(255,236,170,.95)'); gr.addColorStop(0.22, 'rgba(240,196,95,.45)'); gr.addColorStop(0.55, 'rgba(226,170,70,.12)'); gr.addColorStop(1, 'rgba(226,170,70,0)'); x.fillStyle = gr; x.fillRect(0, 0, sz, sz);
-        if (star) { x.globalCompositeOperation = 'lighter'; for (const [w, l] of [[sz * 0.018, h * 0.95], [sz * 0.01, h * 0.6]]) { for (const a of [0, Math.PI / 2]) { x.save(); x.translate(h, h); x.rotate(a + (l < h * 0.7 ? Math.PI / 4 : 0)); const lg = x.createLinearGradient(-l, 0, l, 0); lg.addColorStop(0, 'rgba(255,240,200,0)'); lg.addColorStop(0.5, 'rgba(255,250,235,.95)'); lg.addColorStop(1, 'rgba(255,240,200,0)'); x.fillStyle = lg; x.fillRect(-l, -w, l * 2, w * 2); x.restore(); } } }
+        let gr = x.createRadialGradient(h, h, 0, h, h, h); gr.addColorStop(0, `rgba(${PC.mag},1)`); gr.addColorStop(0.08, `rgba(${PC.k1},.95)`); gr.addColorStop(0.22, `rgba(${PC.k2},.45)`); gr.addColorStop(0.55, `rgba(${PC.k3},.12)`); gr.addColorStop(1, `rgba(${PC.k3},0)`); x.fillStyle = gr; x.fillRect(0, 0, sz, sz);
+        if (star) { x.globalCompositeOperation = 'lighter'; for (const [w, l] of [[sz * 0.018, h * 0.95], [sz * 0.01, h * 0.6]]) { for (const a of [0, Math.PI / 2]) { x.save(); x.translate(h, h); x.rotate(a + (l < h * 0.7 ? Math.PI / 4 : 0)); const lg = x.createLinearGradient(-l, 0, l, 0); lg.addColorStop(0, `rgba(${PC.csill0},0)`); lg.addColorStop(0.5, `rgba(${PC.csill},.95)`); lg.addColorStop(1, `rgba(${PC.csill0},0)`); x.fillStyle = lg; x.fillRect(-l, -w, l * 2, w * 2); x.restore(); } } }
         return o; };
-      const SP = sprite(128, false), ST = sprite(160, true), BK = (() => { const o = document.createElement('canvas'); o.width = o.height = 128; const x = o.getContext('2d'), gr = x.createRadialGradient(64, 64, 20, 64, 64, 64); gr.addColorStop(0, 'rgba(255,214,140,.55)'); gr.addColorStop(0.7, 'rgba(255,200,110,.28)'); gr.addColorStop(1, 'rgba(255,200,110,0)'); x.fillStyle = gr; x.beginPath(); x.arc(64, 64, 64, 0, 6.3); x.fill(); return o; })();
+      const SP = sprite(128, false), ST = sprite(160, true), BK = (() => { const o = document.createElement('canvas'); o.width = o.height = 128; const x = o.getContext('2d'), gr = x.createRadialGradient(64, 64, 20, 64, 64, 64); gr.addColorStop(0, `rgba(${PC.b1},.55)`); gr.addColorStop(0.7, `rgba(${PC.b2},.28)`); gr.addColorStop(1, `rgba(${PC.b2},0)`); x.fillStyle = gr; x.beginPath(); x.arc(64, 64, 64, 0, 6.3); x.fill(); return o; })();
       const mob = innerWidth < 760, mk = (k) => ({ k, x: Math.random(), y: Math.random(), z: 0.35 + Math.random() * 0.65, vx: 0, vy: 0, tw: Math.random() * 6.28 });
       const P = [...Array.from({ length: mob ? 6 : 12 }, () => mk('b')), ...Array.from({ length: mob ? 40 : 80 }, () => mk('d')), ...Array.from({ length: mob ? 5 : 10 }, () => mk('s'))]; let lastF = 0;
       FX.tick((t) => { if (busy()) { lastF = 0; return; } const dt = lastF ? Math.min(2.5, (t - lastF) / 16.667) : 1; lastF = t; const d = c._d || 1, W = c.width / d, H = c.height / d, rr = stage.getBoundingClientRect(), mx = F3.mouse.x - rr.left, my = F3.mouse.y - rr.top;
-        g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter'; g.imageSmoothingQuality = 'high';
+        g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H); g.globalCompositeOperation = TM ? TM.blend : 'lighter'; g.imageSmoothingQuality = 'high';
         for (const p of P) {
           const sp = p.k === 'b' ? 0.00012 : 0.00035; p.y -= sp * (1 + p.z) * dt;   // időarányos mozgás: egy lassabb képkocka után sem ugrik if (p.y < -0.08) { p.y = 1.08; p.x = Math.random(); }
           let x = p.x * W + Math.sin(t / 2400 + p.tw) * 22 * p.z, y = p.y * H; const dx = x - mx, dy = y - my, dd = Math.hypot(dx, dy) || 1;
@@ -126,7 +140,7 @@ LAYOUTS.recepcio = function () {
     });
   });
 
-  return `<div class="lx2 rc rc-${tema}">
+  return `<div class="lx2 rc ${lux ? 'rc-luxus ' : ''}rc-${tema}">
     <section class="rc-stage" aria-label="A szalon recepciója – húzd oldalra a körbenézéshez">
       ${C.recepcio && C.recepcio.hatter ? `<div class="rc-photo" style="background-image:url(${img(C.recepcio.hatter)})"></div>` : ''}<div class="rc-sky"></div><div class="rc-wall"></div><div class="rc-brand" aria-hidden="true"><span>${esc(C.name)}</span></div><div class="rc-strip"></div><div class="rc-halo"></div><div class="rc-floor"></div>
       <div class="rc-scene"><div class="rc-ring">
@@ -153,10 +167,10 @@ LAYOUTS.recepcio = function () {
 // minden aloldalon (nem csak a főoldalon): logó-betű a menüben; a „termek” és a „csoportok” fül kikerül a menüből,
 // mert a recepción a termek pontosan ezt adják (az oldalak a termekből és a linkekről továbbra is elérhetők)
 (function rcGlobal() {
-  const go = () => { if (typeof C === 'undefined' || C.layout !== 'recepcio') return;
+  const go = () => { if (typeof C === 'undefined' || !/^recepcio/.test((typeof LY === 'function' && LY()) || C.layout || '')) return;
     if (C.logo) $$('.brand-mark').forEach((m) => { m.textContent = C.logo.betu || ''; m.classList.add('rc-lg'); });
-    const lux = C.recepcio && C.recepcio.tema === 'luxus';
-    if (lux && !document.body.__rcLux) { document.body.__rcLux = 1; const fix = () => { const cl = document.body.classList; if (cl.contains('light')) cl.remove('light'); if (!cl.contains('rc-lux')) cl.add('rc-lux'); };   // csak valódi változáskor ír (különben a figyelő önmagát hívná végtelenül)
+    const tema = rcTema(), TM = RC_TEMAK[tema], lux = !!TM; if (TM && !document.body.classList.contains('rc-t-' + tema)) document.body.classList.add('rc-t-' + tema);
+    if (lux && !document.body.__rcLux) { document.body.__rcLux = 1; const fix = () => { const cl = document.body.classList; if (TM.dark && cl.contains('light')) cl.remove('light'); if (!cl.contains('rc-lux')) cl.add('rc-lux'); };   // csak valódi változáskor ír (különben a figyelő önmagát hívná végtelenül)
       if (C.recepcio.hatter) document.body.style.setProperty('--rc-bg', `url(${img(C.recepcio.hatter)})`);   // aloldalak háttere: a recepció fotója, sötétítve
       fix(); new MutationObserver(fix).observe(document.body, { attributes: true, attributeFilter: ['class'] }); }   // a sötét luxus téma MINDEN aloldalon (közvetlen megnyitásnál is) – soha ne villanjon be a világos
     const nl = document.getElementById('navLinks'); if (nl && !nl.querySelector('a.rc-home')) { const a = document.createElement('a'); a.href = '#/'; a.className = 'rc-home'; a.textContent = 'Főoldal'; nl.prepend(a); }
@@ -164,3 +178,6 @@ LAYOUTS.recepcio = function () {
     if (!(C.recepcio && C.recepcio.teljesMenu)) $$('#navLinks a').forEach((a) => { const h = (a.getAttribute('href') || '').slice(2); if (h === 'markak' || h === (typeof NR !== 'undefined' ? NR : '')) a.remove(); }); };
   let n = 0; const iv = setInterval(() => { go(); if (++n > 40) clearInterval(iv); }, 150); window.addEventListener('hashchange', () => { setTimeout(go, 0); setTimeout(go, 400); });   // a config később töltődik be – addig újrapróbálja
 })();
+
+// a stílus-változatok ugyanazt a felépítést használják (a színvilágot a rcTema() adja)
+for (const k of Object.keys(window.RC_TEMAK)) LAYOUTS['recepcio-' + k] = LAYOUTS.recepcio;
