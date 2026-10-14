@@ -112,7 +112,7 @@ body:has(.rc-luxus) .nav a, body:has(.rc-luxus) .brand { color: #f4ecdc; }
 .rc-beam.b1 { left: 4%; } .rc-beam.b2 { left: 36%; animation-delay: -3s !important; } .rc-beam.b3 { right: 4%; animation-delay: -6s !important; }
 @keyframes rcBeam { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
 .rc-dust { inset: 0; z-index: 2; pointer-events: none; }
-.rc-luxus .rc-room { filter: brightness(.55) saturate(.7); -webkit-box-reflect: below 26px linear-gradient(transparent 62%, rgba(255,255,255,.22)); }
+.rc-luxus .rc-room { filter: brightness(.55) saturate(.7); }   /* tükörkép nincs (a user szerint zavaró; a -webkit-box-reflect:none felülírást a Chrome eldobja) */
 .rc-luxus .rc-room.front { filter: none; }
 .rc-luxus .rc-arch { box-shadow: 0 0 0 1px rgba(226,194,122,.6), 0 0 0 9px rgba(10,9,7,.85), 0 0 0 10px rgba(226,194,122,.35), 0 40px 80px -20px rgba(0,0,0,.9); }
 .rc-luxus .rc-arch::after { background: linear-gradient(rgba(255,240,200,.10), transparent 35%, rgba(0,0,0,.45)); }
@@ -223,7 +223,7 @@ body:has(.rc-luxus) .nav { backdrop-filter: none !important; -webkit-backdrop-fi
 /* fénycsóvák: elmosó szűrő és keverőmód nélkül, a forgás a videókártyán */
 .rc-beam { filter: none !important; mix-blend-mode: normal !important; background: linear-gradient(rgba(255,233,170,.13), rgba(255,233,170,.04) 45%, transparent 75%); will-change: transform; }
 /* termek: tükröződés és szűrő helyett sötétítő réteg (a forgó 3D elemeken a filter/box-reflect drága) */
-.rc-luxus .rc-room { -webkit-box-reflect: none !important; filter: none !important; }
+.rc-luxus .rc-room { filter: none !important; }
 .rc-luxus .rc-room::after { content: ''; position: absolute; inset: 0 0 96px; border-radius: 180px 180px 18px 18px; background: rgba(0,0,0,.38); pointer-events: none; transition: opacity .5s; }
 .rc-luxus .rc-room.front::after { opacity: 0; }
 /* neonív: a lüktetés egy előre megrajzolt fényréteg átlátszóságát animálja (nem a box-shadow-t) */
