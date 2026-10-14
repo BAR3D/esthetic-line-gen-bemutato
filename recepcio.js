@@ -45,12 +45,12 @@ LAYOUTS.recepcio = function () {
       const SP = sprite(128, false), ST = sprite(160, true), BK = (() => { const o = document.createElement('canvas'); o.width = o.height = 128; const x = o.getContext('2d'), gr = x.createRadialGradient(64, 64, 20, 64, 64, 64); gr.addColorStop(0, 'rgba(255,214,140,.55)'); gr.addColorStop(0.7, 'rgba(255,200,110,.28)'); gr.addColorStop(1, 'rgba(255,200,110,0)'); x.fillStyle = gr; x.beginPath(); x.arc(64, 64, 64, 0, 6.3); x.fill(); return o; })();
       const mob = innerWidth < 760, mk = (k) => ({ k, x: Math.random(), y: Math.random(), z: 0.35 + Math.random() * 0.65, vx: 0, vy: 0, tw: Math.random() * 6.28 });
       const P = [...Array.from({ length: mob ? 6 : 12 }, () => mk('b')), ...Array.from({ length: mob ? 40 : 80 }, () => mk('d')), ...Array.from({ length: mob ? 5 : 10 }, () => mk('s'))]; let lastF = 0;
-      FX.tick((t) => { if (busy() || t - lastF < 32) return; lastF = t; const d = c._d || 1, W = c.width / d, H = c.height / d, rr = stage.getBoundingClientRect(), mx = F3.mouse.x - rr.left, my = F3.mouse.y - rr.top;
+      FX.tick((t) => { if (busy()) { lastF = 0; return; } const dt = lastF ? Math.min(2.5, (t - lastF) / 16.667) : 1; lastF = t; const d = c._d || 1, W = c.width / d, H = c.height / d, rr = stage.getBoundingClientRect(), mx = F3.mouse.x - rr.left, my = F3.mouse.y - rr.top;
         g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter'; g.imageSmoothingQuality = 'high';
         for (const p of P) {
-          const sp = p.k === 'b' ? 0.00012 : 0.00035; p.y -= sp * (1 + p.z); if (p.y < -0.08) { p.y = 1.08; p.x = Math.random(); }
+          const sp = p.k === 'b' ? 0.00012 : 0.00035; p.y -= sp * (1 + p.z) * dt;   // időarányos mozgás: egy lassabb képkocka után sem ugrik if (p.y < -0.08) { p.y = 1.08; p.x = Math.random(); }
           let x = p.x * W + Math.sin(t / 2400 + p.tw) * 22 * p.z, y = p.y * H; const dx = x - mx, dy = y - my, dd = Math.hypot(dx, dy) || 1;
-          if (p.k !== 'b' && dd < 160) { p.vx += (dx / dd) * (160 - dd) * 0.0011; p.vy += (dy / dd) * (160 - dd) * 0.0011; } p.vx *= 0.95; p.vy *= 0.95; p.x += p.vx / 10; p.y += p.vy / 10;
+          if (p.k !== 'b' && dd < 160) { p.vx += (dx / dd) * (160 - dd) * 0.0011 * dt; p.vy += (dy / dd) * (160 - dd) * 0.0011 * dt; } const dmp = Math.pow(0.95, dt); p.vx *= dmp; p.vy *= dmp; p.x += (p.vx / 10) * dt; p.y += (p.vy / 10) * dt;
           const tw = 0.55 + 0.45 * Math.sin(t / (p.k === 's' ? 420 : 760) + p.tw);
           if (p.k === 'b') { const r = 40 + p.z * 70; g.globalAlpha = 0.16 + 0.12 * tw; g.drawImage(BK, x - r, y - r, r * 2, r * 2); }
           else if (p.k === 's') { const r = (14 + p.z * 22) * (0.75 + 0.35 * tw); g.globalAlpha = 0.65 + 0.35 * tw; g.drawImage(ST, x - r, y - r, r * 2, r * 2); }
