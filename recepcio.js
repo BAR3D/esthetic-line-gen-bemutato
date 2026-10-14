@@ -27,15 +27,16 @@ LAYOUTS.recepcio = function () {
     if (lux) document.body.classList.remove('light');   // a sötét luxus téma a saját színeit használja
     const stage = $('.rc-stage'), ring = $('.rc-ring'), doors = $('.rc-doors'), panels = $$('.rc-room'), chips = $$('.rc-chip'), room = $('.rc-open'); if (!stage) return;
     // érkezés: az ajtó szétnyílik
+    let paused = false; const busy = () => paused || document.hidden || room.classList.contains('on') || !F3.visible(stage);   // ilyenkor semmi nem rajzol
     const ph = $('.rc-photo', stage); if (ph) { let mx = 0, my = 0, cx = 0, cy = 0; FX.on(window, 'pointermove', (e) => { mx = e.clientX / innerWidth - 0.5; my = e.clientY / innerHeight - 0.5; }, { passive: true });
-      FX.tick(() => { cx += (mx - cx) * 0.04; cy += (my - cy) * 0.04; ph.style.transform = `scale(1.05) translate(${cx * -16 - ((ang % 360) / 360) * 20}px, ${cy * -10}px)`; }); }   // a valódi(szerű) recepciókép enyhe mélységgel mozdul
+      let lpx = 1e9, lpy = 1e9; FX.tick(() => { if (busy()) return; cx += (mx - cx) * 0.04; cy += (my - cy) * 0.04; const px = Math.round((cx * -16 - ((ang % 360) / 360) * 20) * 10) / 10, py = Math.round(cy * -100) / 10; if (px === lpx && py === lpy) return; lpx = px; lpy = py; ph.style.transform = `scale(1.05) translate3d(${px}px, ${py}px, 0)`; }); }   // a valódi(szerű) recepciókép enyhe mélységgel mozdul
     const quick = FX.reduce || /thumb=1/.test(location.search);
     const varj = (C.recepcio && C.recepcio.ajtoIdo) || 2200;   // ennyi ideig állunk az ajtó előtt (ms) – el lehessen olvasni
-    FX.later(() => { doors.classList.add('open'); stage.classList.add('in'); }, quick ? 0 : varj);
+    FX.later(() => { doors.classList.add('open'); stage.classList.add('in'); FX.later(() => { doors.style.display = 'none'; }, 1600); }, quick ? 0 : varj);
     let intro = quick ? 1 : 0; const t0 = performance.now() + (quick ? 0 : varj);   // belépő kamera: messziről beúszik
     if (lux) {   // aranypor: éles, előrerajzolt szikrák (mag + glória + csillanás) és puha bokeh-fények – az egér elől szétrebbennek
       const { c, g, dpr } = F3.canvas('rc-dust', stage, false); c.style.position = 'absolute'; F3.trackMouse();
-      const fitC = () => { const r = stage.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); c.width = r.width * d; c.height = r.height * d; c.style.width = r.width + 'px'; c.style.height = r.height + 'px'; c._d = d; };
+      const fitC = () => { const r = stage.getBoundingClientRect(), d = 1; c.width = r.width * d; c.height = r.height * d; c.style.width = r.width + 'px'; c.style.height = r.height + 'px'; c._d = d; };
       fitC(); FX.on(window, 'resize', fitC);
       const sprite = (sz, star) => { const o = document.createElement('canvas'); o.width = o.height = sz; const x = o.getContext('2d'), h = sz / 2;
         let gr = x.createRadialGradient(h, h, 0, h, h, h); gr.addColorStop(0, 'rgba(255,250,230,1)'); gr.addColorStop(0.08, 'rgba(255,236,170,.95)'); gr.addColorStop(0.22, 'rgba(240,196,95,.45)'); gr.addColorStop(0.55, 'rgba(226,170,70,.12)'); gr.addColorStop(1, 'rgba(226,170,70,0)'); x.fillStyle = gr; x.fillRect(0, 0, sz, sz);
@@ -43,8 +44,8 @@ LAYOUTS.recepcio = function () {
         return o; };
       const SP = sprite(128, false), ST = sprite(160, true), BK = (() => { const o = document.createElement('canvas'); o.width = o.height = 128; const x = o.getContext('2d'), gr = x.createRadialGradient(64, 64, 20, 64, 64, 64); gr.addColorStop(0, 'rgba(255,214,140,.55)'); gr.addColorStop(0.7, 'rgba(255,200,110,.28)'); gr.addColorStop(1, 'rgba(255,200,110,0)'); x.fillStyle = gr; x.beginPath(); x.arc(64, 64, 64, 0, 6.3); x.fill(); return o; })();
       const mob = innerWidth < 760, mk = (k) => ({ k, x: Math.random(), y: Math.random(), z: 0.35 + Math.random() * 0.65, vx: 0, vy: 0, tw: Math.random() * 6.28 });
-      const P = [...Array.from({ length: mob ? 10 : 18 }, () => mk('b')), ...Array.from({ length: mob ? 60 : 130 }, () => mk('d')), ...Array.from({ length: mob ? 6 : 14 }, () => mk('s'))];
-      FX.tick((t) => { if (!F3.visible(stage)) return; const d = c._d || 1, W = c.width / d, H = c.height / d, rr = stage.getBoundingClientRect(), mx = F3.mouse.x - rr.left, my = F3.mouse.y - rr.top;
+      const P = [...Array.from({ length: mob ? 6 : 12 }, () => mk('b')), ...Array.from({ length: mob ? 40 : 80 }, () => mk('d')), ...Array.from({ length: mob ? 5 : 10 }, () => mk('s'))]; let lastF = 0;
+      FX.tick((t) => { if (busy() || t - lastF < 32) return; lastF = t; const d = c._d || 1, W = c.width / d, H = c.height / d, rr = stage.getBoundingClientRect(), mx = F3.mouse.x - rr.left, my = F3.mouse.y - rr.top;
         g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter'; g.imageSmoothingQuality = 'high';
         for (const p of P) {
           const sp = p.k === 'b' ? 0.00012 : 0.00035; p.y -= sp * (1 + p.z); if (p.y < -0.08) { p.y = 1.08; p.x = Math.random(); }
@@ -96,17 +97,18 @@ LAYOUTS.recepcio = function () {
     panels.forEach((p, i) => FX.on(p, 'click', (e) => { e.preventDefault(); if (moved > 6) return; const front = Math.round(norm(ang) / (360 / N)) % N; if (front !== i) { turnTo(i); FX.later(() => open(i), 650); } else open(i); }));
     $$('.rc-desk [data-open]').forEach((b) => FX.on(b, 'click', () => { const i = +b.dataset.open; turnTo(i); FX.later(() => open(i), 700); }));
     // a kamera: forgás + enyhe lebegés + belépéskor előre úszás
+    let curR = 0; const setR = () => { curR = R(); panels.forEach((p) => p.style.setProperty('--r', curR + 'px')); }; setR(); FX.on(window, 'resize', setR);
+    let lastT = '', lastFront = -1;
     FX.tick((t) => {
-      if (!F3.visible(stage)) return;
-      if (!drag && !room.classList.contains('on') && Math.abs(target - ang) < 0.05) target += Math.sin(t / 3000) * 0.004;
+      if (document.hidden || !F3.visible(stage)) return;
       ang += (target - ang) * 0.08; zoom += (zt - zoom) * 0.07;
-      const r = R();
+      if (Math.abs(target - ang) < 0.01) ang = target; if (Math.abs(zt - zoom) < 0.001) zoom = zt;
+      const r = curR;
       if (intro < 1 && t > t0) intro = Math.min(1, (t - t0) / 1800); const ease = 1 - Math.pow(1 - intro, 3);
-      ring.style.transform = `translateZ(${r * (0.3 + zoom * 1.05) - (1 - ease) * r * 1.6}px) rotateY(${-ang + (1 - ease) * 40}deg)`;
-      panels.forEach((p) => p.style.setProperty('--r', r + 'px'));
+      const tf = `translateZ(${(r * (0.3 + zoom * 1.05) - (1 - ease) * r * 1.6).toFixed(1)}px) rotateY(${(-ang + (1 - ease) * 40).toFixed(2)}deg)`;
+      if (tf !== lastT) { lastT = tf; ring.style.transform = tf; }
       const front = Math.round(norm(ang) / (360 / N)) % N;
-      panels.forEach((p, i) => p.classList.toggle('front', i === front));
-      chips.forEach((c, i) => c.classList.toggle('on', i === front));
+      if (front !== lastFront) { lastFront = front; panels.forEach((p, i) => p.classList.toggle('front', i === front)); chips.forEach((c, i) => c.classList.toggle('on', i === front)); }
       if (front !== lastTeam) { lastTeam = front; showTeam(front); }
     });
   });

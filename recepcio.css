@@ -214,3 +214,25 @@ body:has(.rc-luxus) .nav a, body:has(.rc-luxus) .brand { color: #f4ecdc; }
 /* valódi munkatársi fotó: nagyobb, az arcra igazított kör */
 .rc-tm:has(.rc-tm-av img) { grid-template-columns: 76px 1fr; }
 .rc-tm-av:has(img) { width: 76px; height: 76px; } .rc-tm-av img { object-position: center 22%; }
+
+/* ===================== TELJESÍTMÉNY: drága effektek kiváltása olcsóbbal ===================== */
+/* háttér-elmosás (backdrop-filter) helyett tömör üveghatás – mozgó aranypor fölött képkockánként újraszámolódna */
+.rc-luxus .rc-desk, .rc-luxus .rc-arrow, .rc-luxus .rc-doors i, .rc-stage .rc-desk, .rc-stage .rc-arrow { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.rc-luxus .rc-desk { background: linear-gradient(160deg, rgba(30,26,18,.93), rgba(8,8,8,.95)); }
+body:has(.rc-luxus) .nav { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(10,9,7,.88) !important; }
+/* fénycsóvák: elmosó szűrő és keverőmód nélkül, a forgás a videókártyán */
+.rc-beam { filter: none !important; mix-blend-mode: normal !important; background: linear-gradient(rgba(255,233,170,.13), rgba(255,233,170,.04) 45%, transparent 75%); will-change: transform; }
+/* termek: tükröződés és szűrő helyett sötétítő réteg (a forgó 3D elemeken a filter/box-reflect drága) */
+.rc-luxus .rc-room { -webkit-box-reflect: none !important; filter: none !important; }
+.rc-luxus .rc-room::after { content: ''; position: absolute; inset: 0 0 96px; border-radius: 180px 180px 18px 18px; background: rgba(0,0,0,.38); pointer-events: none; transition: opacity .5s; }
+.rc-luxus .rc-room.front::after { opacity: 0; }
+/* neonív: a lüktetés egy előre megrajzolt fényréteg átlátszóságát animálja (nem a box-shadow-t) */
+.rc-luxus .rc-room.front .rc-arch { animation: none !important; box-shadow: 0 0 0 2px #f7e3a8, 0 0 0 9px rgba(10,9,7,.85), 0 0 0 11px #e2c27a, 0 0 60px rgba(226,194,122,.8); }
+.rc-luxus .rc-arch::before { content: ''; position: absolute; inset: -14px; border-radius: 190px 190px 26px 26px; box-shadow: 0 0 90px rgba(247,227,168,.9), 0 0 200px rgba(226,194,122,.55); opacity: 0; pointer-events: none; will-change: opacity; }
+.rc-luxus .rc-room.front .rc-arch::before { animation: rcGlowOp 2.6s ease-in-out infinite; }
+@keyframes rcGlowOp { 0%, 100% { opacity: .25; } 50% { opacity: .85; } }
+/* fénygyűrű, avatar: statikus fény; a szaggatott gyűrű forgása a videókártyán */
+.rc-luxus .rc-halo { animation: none !important; } .rc-luxus .rc-halo::after { will-change: transform; } .rc-luxus .rc-avatar { animation: none !important; }
+/* a cégtábla felirata statikus aranyszínátmenet (a folyamatos csillogás újrafestett minden képkockát) */
+.rc-luxus .rc-brand span { animation: none !important; background-position: 30% 0; }
+.rc-ring { will-change: transform; } .rc-photo { will-change: transform; } .rc-dust { will-change: auto; }
