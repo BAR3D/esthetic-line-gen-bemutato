@@ -260,13 +260,12 @@ body:has(.rc-luxus) .nav { backdrop-filter: none !important; -webkit-backdrop-fi
 /* a szárnyak 50,5%-osak (1% átfedés) – az érem két fele pontosan a lap közepére kerül, így az átfedésben fedésben vannak */
 .rc-doors .l .rc-medal { right: calc(0.990099% - var(--m) / 2); } .rc-doors .r .rc-medal { left: calc(0.990099% - var(--m) / 2); }
 
-/* ===================== árlista: a szalon eszközei (tégely, szérum, lakk, olló, fésű, kövek…) apró arany 3D-másolatként lebegnek – visszafogottan ===================== */
-.rc-float { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; perspective: 700px; }
-body.rc-lux .page, body.rc-lux footer { position: relative; z-index: 1; }
-.rc-fl { position: absolute; width: var(--s); height: var(--s); opacity: .55; animation: rcFlY var(--f) ease-in-out var(--dl) infinite alternate; }
-.rc-fl svg { width: 100%; height: 100%; display: block; overflow: visible; transform-origin: 50% 60%; animation: rcFlR var(--d) ease-in-out var(--dl) infinite alternate; will-change: transform; }
-@keyframes rcFlY { from { transform: translateY(-10px); } to { transform: translateY(10px); } }
-@keyframes rcFlR { from { transform: rotateZ(var(--r0)) rotateY(-28deg) rotateX(8deg); } to { transform: rotateZ(calc(var(--r0) * -1)) rotateY(28deg) rotateX(-6deg); } }
-@media (prefers-reduced-motion: reduce) { .rc-fl, .rc-fl svg { animation: none; } }
 /* sötét téma: a termékkép ne fehér keretben álljon */
 body.rc-lux .card-img { background: #0d0c0a; } body.rc-lux .card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ===================== luxus aloldalak háttere: a szalon recepciója mélyen sötétítve + meleg arany fények a sarkokban (mozdulatlan, olcsó) ===================== */
+body.rc-lux::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 55% 45% at 0% 0%, rgba(226,194,122,.20), transparent 70%), radial-gradient(ellipse 45% 55% at 100% 100%, rgba(226,194,122,.14), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 120%, rgba(120,90,40,.25), transparent 70%), linear-gradient(180deg, rgba(9,8,7,.80), rgba(9,8,7,.90) 60%, rgba(9,8,7,.95)), var(--rc-bg, none) center / cover no-repeat, #0b0a08; }
+body.rc-lux::after { content: ''; position: fixed; inset: 14px; z-index: -1; pointer-events: none; border: 1px solid rgba(226,194,122,.14); border-radius: 26px; }   /* finom arany keret a lap körül */
+body.rc-lux { background: #0b0a08; }
