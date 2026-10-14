@@ -269,3 +269,12 @@ body.rc-lux::before { content: ''; position: fixed; inset: 0; z-index: -1; point
     radial-gradient(ellipse 70% 50% at 50% 120%, rgba(120,90,40,.25), transparent 70%), linear-gradient(180deg, rgba(9,8,7,.80), rgba(9,8,7,.90) 60%, rgba(9,8,7,.95)), var(--rc-bg, none) center / cover no-repeat, #0b0a08; }
 body.rc-lux::after { content: ''; position: fixed; inset: 14px; z-index: -1; pointer-events: none; border: 1px solid rgba(226,194,122,.14); border-radius: 26px; }   /* finom arany keret a lap körül */
 body.rc-lux { background: #0b0a08; }
+/* ajtónyitás egy mozdulatban: a fény a szárnyak MÖGÖTT van (a nyíló résen árad be, nem nyílik szét előttük „második ajtóként”),
+   és a szárnyak azonnal indulnak (nem lassan gyorsulva) – a logó-érem a nyitás első pillanatában kettéválik */
+.rc-doors i { z-index: 2; }
+.rc-doors .rc-seam { z-index: 1; }
+.rc-doors .rc-welcome { z-index: 3; }
+.rc-doors.open i { transition: transform 1.25s cubic-bezier(.3, .1, .2, 1) !important; }
+/* az érem-felet magán az érmen vágjuk (a szárny overflow-ja a saját rétegén nem mindig vág → nyitáskor két teljes logó látszott, „dupla ajtó”) */
+.rc-doors .l .rc-medal { clip-path: inset(-40px calc(50% - .5vw) -40px -40px); }
+.rc-doors .r .rc-medal { clip-path: inset(-40px -40px -40px calc(50% - .5vw)); }
