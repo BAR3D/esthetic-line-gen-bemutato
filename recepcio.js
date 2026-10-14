@@ -144,6 +144,30 @@ LAYOUTS.recepcio = function () {
 (function rcGlobal() {
   const go = () => { if (typeof C === 'undefined' || C.layout !== 'recepcio') return;
     if (C.logo) $$('.brand-mark').forEach((m) => { m.textContent = C.logo.betu || ''; m.classList.add('rc-lg'); });
+    const lux = C.recepcio && C.recepcio.tema === 'luxus';
+    if (lux && !document.body.__rcLux) { document.body.__rcLux = 1; const fix = () => { if (document.body.classList.contains('light')) document.body.classList.remove('light'); document.body.classList.add('rc-lux'); };
+      fix(); new MutationObserver(fix).observe(document.body, { attributes: true, attributeFilter: ['class'] }); }   // a sötét luxus téma MINDEN aloldalon (közvetlen megnyitásnál is) – soha ne villanjon be a világos
+    if (lux) rcFloat();
     if (!(C.recepcio && C.recepcio.teljesMenu)) $$('#navLinks a').forEach((a) => { const h = (a.getAttribute('href') || '').slice(2); if (h === 'markak' || h === (typeof NR !== 'undefined' ? NR : '')) a.remove(); }); };
-  let n = 0; const iv = setInterval(() => { go(); if (++n > 40) clearInterval(iv); }, 150); window.addEventListener('hashchange', () => setTimeout(go, 0));   // a config később töltődik be – addig újrapróbálja
+  // árlista: a kínálat kis 3D-s másolatai lebegnek és forognak a lap két szélén (csak CSS-animáció, a videókártyán fut)
+  function rcFloat() {
+    const on = /^#\/termekek/.test(location.hash), old = document.querySelector('.rc-float');
+    if (!on || typeof S === 'undefined' || !S || !S.products) { if (old && !on) old.remove(); return; }
+    const pg = document.querySelector('.page.wrap'); if (!pg) return;
+    const r = pg.getBoundingClientRect(), mg = Math.min(r.left, innerWidth - r.right);
+    if (old && old.__w === innerWidth) return; if (old) old.remove();
+    if (mg < 120) return;   // keskeny képernyőn nincs hely a széleken – nem takarhatja a listát
+    const ims = [...new Set(S.products.map((p) => pimg(p)).filter(Boolean))].slice(0, 12); if (!ims.length) return;
+    const L = document.createElement('div'); L.className = 'rc-float'; L.setAttribute('aria-hidden', 'true'); L.__w = innerWidth;
+    const n = Math.min(12, Math.max(6, Math.round(innerHeight / 150)) * 2), sz = Math.max(70, Math.min(150, mg * 0.55));
+    let h = '';
+    for (let i = 0; i < n; i++) { const left = i % 2 === 0, k = Math.floor(i / 2), rows = Math.ceil(n / 2), s = Math.round(sz * (0.7 + Math.random() * 0.45));
+      const x = left ? 12 + Math.random() * Math.max(0, mg - s - 24) : innerWidth - mg + 12 + Math.random() * Math.max(0, mg - s - 24), y = ((k + 0.15 + Math.random() * 0.6) / rows) * 100;
+      const im = ims[i % ims.length], d = (16 + Math.random() * 14).toFixed(1), f = (5 + Math.random() * 4).toFixed(1), dl = (-Math.random() * 20).toFixed(1);
+      h += `<div class="rc-fl" style="left:${x.toFixed(0)}px;top:calc(${y.toFixed(1)}% - ${s / 2}px);--s:${s}px;--f:${f}s;--dl:${dl}s"><div class="rc-fl-in" style="--d:${d}s;--rx:${(Math.random() * 24 - 12).toFixed(0)}deg;${Math.random() < 0.5 ? 'animation-direction:reverse;' : ''}">
+        <i class="rc-fl-f" style="background-image:url(${im})"></i><b></b><b></b><b></b><b></b><i class="rc-fl-b"><span>${esc((C.logo && C.logo.betu) || (C.name || '').charAt(0))}</span></i></div></div>`; }
+    L.innerHTML = h; document.body.appendChild(L);
+  }
+  window.addEventListener('resize', () => { if (typeof C !== 'undefined' && C.recepcio && C.recepcio.tema === 'luxus') { const o = document.querySelector('.rc-float'); if (o) o.remove(); rcFloat(); } });
+  let n = 0; const iv = setInterval(() => { go(); if (++n > 40) clearInterval(iv); }, 150); window.addEventListener('hashchange', () => { setTimeout(go, 0); setTimeout(go, 400); });   // a config később töltődik be – addig újrapróbálja
 })();
