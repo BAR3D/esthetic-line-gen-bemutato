@@ -24,8 +24,9 @@ LAYOUTS.recepcio = function () {
     const ph = $('.rc-photo', stage); if (ph) { let mx = 0, my = 0, cx = 0, cy = 0; FX.on(window, 'pointermove', (e) => { mx = e.clientX / innerWidth - 0.5; my = e.clientY / innerHeight - 0.5; }, { passive: true });
       FX.tick(() => { cx += (mx - cx) * 0.04; cy += (my - cy) * 0.04; ph.style.transform = `scale(1.05) translate(${cx * -16 - ((ang % 360) / 360) * 20}px, ${cy * -10}px)`; }); }   // a valódi(szerű) recepciókép enyhe mélységgel mozdul
     const quick = FX.reduce || /thumb=1/.test(location.search);
-    FX.later(() => { doors.classList.add('open'); stage.classList.add('in'); }, quick ? 0 : 1100);
-    let intro = quick ? 1 : 0; const t0 = performance.now() + (quick ? 0 : 1100);   // belépő kamera: messziről beúszik
+    const varj = (C.recepcio && C.recepcio.ajtoIdo) || 2200;   // ennyi ideig állunk az ajtó előtt (ms) – el lehessen olvasni
+    FX.later(() => { doors.classList.add('open'); stage.classList.add('in'); }, quick ? 0 : varj);
+    let intro = quick ? 1 : 0; const t0 = performance.now() + (quick ? 0 : varj);   // belépő kamera: messziről beúszik
     if (lux) {   // aranypor: éles, előrerajzolt szikrák (mag + glória + csillanás) és puha bokeh-fények – az egér elől szétrebbennek
       const { c, g, dpr } = F3.canvas('rc-dust', stage, false); c.style.position = 'absolute'; F3.trackMouse();
       const fitC = () => { const r = stage.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); c.width = r.width * d; c.height = r.height * d; c.style.width = r.width + 'px'; c.style.height = r.height + 'px'; c._d = d; };
