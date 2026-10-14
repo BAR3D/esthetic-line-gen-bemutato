@@ -329,3 +329,5 @@ body.rc-t-ejkek, .rc-ejkek {
 body.rc-t-pezsgo, .rc-pezsgo {
   --rcA0: #5e3f2c; --rcA1: #a8745a; --rcA1r: 214,170,140; --rcA2: #c39176; --rcA2r: 195,145,118; --rcA3: #a8745a; --rcA4: #7c5340; --rcA4r: 124,83,64;
   --rcD0: #f8f3ec; --rcD0r: 248,243,236; --rcD1: #fffaf3; --rcD1r: 255,250,243; --rcT1: #3a2d22; --rcT2: #6e5d4e; --rcINK: #fffaf3; }
+.rc-pezsgo .rc-welcome b { filter: drop-shadow(0 2px 16px rgba(255,250,243,.95)) !important; text-shadow: none !important; }
+.rc-pezsgo .rc-welcome small { color: var(--rcA4); }
