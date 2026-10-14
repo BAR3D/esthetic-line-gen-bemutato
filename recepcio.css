@@ -278,3 +278,10 @@ body.rc-lux { background: #0b0a08; }
 /* az érem-felet magán az érmen vágjuk (a szárny overflow-ja a saját rétegén nem mindig vág → nyitáskor két teljes logó látszott, „dupla ajtó”) */
 .rc-doors .l .rc-medal { clip-path: inset(-40px calc(50% - .5vw) -40px -40px); }
 .rc-doors .r .rc-medal { clip-path: inset(-40px -40px -40px calc(50% - .5vw)); }
+/* az érem fénye ne kapjon szögletes vágást (a vágás csak a középvonalnál legyen), és lágyan, több rétegben terüljön szét */
+.rc-doors .l .rc-medal { clip-path: inset(-400px calc(50% - .5vw) -400px -400px); }
+.rc-doors .r .rc-medal { clip-path: inset(-400px -400px -400px calc(50% - .5vw)); }
+.rc-medal { box-shadow: 0 0 0 3px #e2c27a, 0 0 0 12px rgba(10,9,7,.9), 0 0 0 14px rgba(226,194,122,.55), 0 0 60px 6px rgba(226,194,122,.32), 0 0 160px 40px rgba(226,194,122,.14), 0 0 320px 120px rgba(226,194,122,.06); }
+/* a két szárny tükörszimmetrikus árnyalatú – a résnél nem üt el egymástól */
+.rc-luxus .rc-doors .l { background: linear-gradient(90deg, rgba(12,11,9,.97), rgba(24,21,15,.95)); }
+.rc-luxus .rc-doors .r { background: linear-gradient(270deg, rgba(12,11,9,.97), rgba(24,21,15,.95)); }
