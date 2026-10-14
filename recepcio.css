@@ -345,3 +345,21 @@ body.rc-t-pezsgo, .rc-pezsgo {
 .rc-medal::before { content: ''; position: absolute; inset: -70%; z-index: -1; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle closest-side, transparent 0 41.5%, rgba(var(--rcA2r, 226,194,122),.18) 43%, rgba(var(--rcA2r, 226,194,122),.07) 55%, rgba(var(--rcA2r, 226,194,122),.025) 75%, transparent 100%); }
 @media (max-width: 760px) { .rc-luxus .rc-dust { opacity: .7; } }
+
+/* ===================== akciós felugró ablak (Szalon-admin → Akció) ===================== */
+.rc-akcio { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px; opacity: 0; transition: opacity .35s; }
+.rc-akcio.on { opacity: 1; }
+.rc-akcio-bg { position: absolute; inset: 0; background: rgba(var(--rcD0r, 6,5,4),.62); }
+.rc-akcio-k { position: relative; width: min(460px, 100%); border-radius: 22px; overflow: hidden; color: var(--rcT1, #f4ecdc);
+  background: linear-gradient(160deg, var(--rcD1, #1f1a12), var(--rcD0, #0c0b08)); border: 1px solid rgba(var(--rcA2r, 226,194,122),.6);
+  box-shadow: 0 40px 100px rgba(0,0,0,.7), 0 0 60px rgba(var(--rcA2r, 226,194,122),.18); transform: translateY(18px) scale(.97); transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.rc-akcio.on .rc-akcio-k { transform: none; }
+.rc-akcio-kep { aspect-ratio: 16 / 8; background: center / cover; border-bottom: 1px solid rgba(var(--rcA2r, 226,194,122),.35); }
+.rc-akcio-b { display: grid; gap: 10px; padding: 22px 24px 24px; }
+.rc-akcio-b small { font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--rcA2, #e2c27a); font-weight: 700; }
+.rc-akcio-b h3 { margin: 0; font-family: var(--serif); font-size: clamp(24px, 4vw, 30px); line-height: 1.15; color: var(--rcA0, #fff3d0); text-wrap: balance; }
+.rc-akcio-b p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--rcT2, #d9cdb6); }
+.rc-akcio-kod { justify-self: start; display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; cursor: pointer; border: 1px dashed rgba(var(--rcA2r, 226,194,122),.7); background: rgba(var(--rcA2r, 226,194,122),.08); color: inherit; }
+.rc-akcio-kod span { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--rcA2, #e2c27a); } .rc-akcio-kod b { font-size: 17px; letter-spacing: .12em; color: var(--rcA0, #fff3d0); }
+.rc-akcio-gombok { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.rc-akcio-zar { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(var(--rcA2r, 226,194,122),.5); background: rgba(var(--rcD0r, 10,9,7),.7); color: var(--rcA1, #f7e3a8); font-size: 20px; line-height: 1; cursor: pointer; }

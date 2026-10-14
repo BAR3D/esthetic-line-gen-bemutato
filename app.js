@@ -719,12 +719,34 @@ async function checkUpdate() {
 $('#updateBtn').onclick = () => location.reload();
 setInterval(checkUpdate, 60000);
 
+/* ---------- élő tartalom (Szalon-admin, bluffparlor.com/szalonadmin/) ----------
+   C.elo = 'https://…/api/szalon/<oldal>' → a kezelések, árak, leírások, termek, munkatársak, háttér és az akció onnan jönnek.
+   Ha a szerver nem válaszol 3 mp-en belül, a beépített (data/) tartalom marad – az oldal sosem üres. */
+async function eloTartalom() {
+  if (!C.elo || /[?&]statikus=1/.test(location.search)) return;
+  let t; try { const ac = new AbortController(), to = setTimeout(() => ac.abort(), 3000); t = await (await fetch(C.elo + '/elo', { cache: 'no-store', signal: ac.signal })).json(); clearTimeout(to); } catch { return; }
+  if (!t || !Array.isArray(t.kezelesek)) return;
+  const O = new URL(C.elo).origin, K = (u) => (u && u.startsWith('/api/') ? O + u : u || '');
+  const bek = (x) => String(x || '').split(/\n{2,}/).map((b) => b.trim()).filter(Boolean).map((b) => b.startsWith('## ') ? `<h3>${esc(b.slice(3))}</h3>` : `<p>${esc(b).replace(/\n/g, '<br>')}</p>`).join('');
+  S.products = t.kezelesek.map((p) => { const sale = p.akciosAr != null && p.ar != null && p.akciosAr < p.ar;
+    return { id: p.id, slug: p.slug, name: p.name, brand: p.cat, cats: p.cat ? [p.cat] : [], tags: [], price: sale ? p.akciosAr : (p.ar ?? 0), regular: p.ar ?? 0, priceMax: null, onSale: sale, inStock: true,
+      sku: '', unit: '', priceLabel: '', options: [], variants: [], short: p.rovid ? `<p>${esc(p.rovid)}</p>` : '', desc: (p.rovid ? `<p>${esc(p.rovid)}</p>` : '') + bek(p.leiras), images: p.kep ? [K(p.kep)] : [], url: '' }; });
+  if (Array.isArray(t.termek) && t.termek.length) { SKINS = C.needs = t.termek.map((r) => ({ k: r.k, name: r.name, d: r.d, img: K(r.img), cats: r.cats || [] }));
+    for (const b of BRANDS) { const r = t.termek.find((x) => x.k === b.k); if (r) { b.name = r.name; b.tag = r.d || b.tag; } } }
+  const ismert = new Set(TYPES.flatMap((x) => x.cats || [])); for (const p of S.products) for (const c of p.cats) if (!ismert.has(c)) { ismert.add(c); TYPES.push({ k: 'uj-' + TYPES.length, name: c, cats: [c] }); }
+  if (Array.isArray(t.csapat)) C.csapat = t.csapat.map((m) => ({ ...m, kep: K(m.kep) }));
+  if (t.kepek && t.kepek.hatter) C.recepcio = { ...(C.recepcio || {}), hatter: K(t.kepek.hatter) };
+  if (t.akcio) C.akcio = { ...t.akcio, kep: K(t.akcio.kep) };
+  if (t.telefon) C.contact = { ...(C.contact || {}), phone: t.telefon };
+}
+
 /* ---------- indítás ---------- */
 (async () => {
   C = await (await fetch('data/config.json', { cache: 'no-store' })).json();
   SKINS = C.needs || []; TYPES = C.types || []; BRANDS = C.lines || []; NR = C.labels.needsRoute || 'igeny'; SCENES = C.scenes || [];
   await background(); sparkle();
   S = await (await fetch('data/site.json?v=' + C.version)).json();
+  await eloTartalom();   // Szalon-admin: a szerkesztőben módosított élő tartalom (ha a projekt be van kötve)
   SKINS.forEach(x => { x.img = img(x.img); });
   cart.load(); renderCart();
   document.body.classList.add('layout-' + LY());

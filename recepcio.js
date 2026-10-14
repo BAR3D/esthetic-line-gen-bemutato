@@ -51,6 +51,7 @@ LAYOUTS.recepcio = function () {
     if (!quick) [...new Set([...rooms.map((r) => r.img), C.recepcio && C.recepcio.hatter ? img(C.recepcio.hatter) : ''].filter(Boolean))].forEach((u) => { const im = new Image(); im.decoding = 'async'; im.src = u; if (im.decode) im.decode().catch(() => {}); });
     const varj = (C.recepcio && C.recepcio.ajtoIdo) || 2200;   // ennyi ideig állunk az ajtó előtt (ms) – el lehessen olvasni
     FX.later(() => { doors.classList.add('open'); stage.classList.add('in'); FX.later(() => { doors.style.display = 'none'; }, 1600); }, quick ? 0 : varj);
+    if (!quick) FX.later(rcAkcio, varj + 1900);   // akciós felugró ablak: a belépés után, amikor a recepció már kirajzolódott
     let intro = quick ? 1 : 0; const t0 = performance.now() + (quick ? 0 : varj);   // belépő kamera: messziről beúszik
     if (lux) {   // aranypor: éles, előrerajzolt szikrák (mag + glória + csillanás) és puha bokeh-fények – az egér elől szétrebbennek
       const { c, g, dpr } = F3.canvas('rc-dust', stage, false); c.style.position = 'absolute'; F3.trackMouse();
@@ -183,3 +184,23 @@ LAYOUTS.recepcio = function () {
 
 // a stílus-változatok ugyanazt a felépítést használják (a színvilágot a rcTema() adja)
 for (const k of Object.keys(window.RC_TEMAK)) LAYOUTS['recepcio-' + k] = LAYOUTS.recepcio;
+
+// ---------- akciós felugró ablak (Szalon-admin → Akció): a recepcióra lépéskor, munkamenetenként egyszer ----------
+function rcAkcio() {
+  const A = typeof C !== 'undefined' && C.akcio; if (!A || !A.aktiv || !(A.cim || A.szoveg)) return;
+  const ma = new Date().toISOString().slice(0, 10); if ((A.kezd && ma < A.kezd) || (A.vege && ma > A.vege)) return;
+  const kulcs = 'rcAkcio:' + (A.cim || '') + (A.vege || ''); try { if (sessionStorage.getItem(kulcs)) return; sessionStorage.setItem(kulcs, '1'); } catch { /* privát mód: mindig megjelenik */ }
+  if (document.querySelector('.rc-akcio')) return;
+  const tel = (C.contact && C.contact.phone) || '', vege = A.vege ? A.vege.replace(/-/g, '. ') + '.' : '';
+  const el = document.createElement('div'); el.className = 'rc-akcio'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', A.cim || 'Akció');
+  el.innerHTML = `<div class="rc-akcio-bg"></div><div class="rc-akcio-k">${A.kep ? `<div class="rc-akcio-kep" style="background-image:url(${A.kep})"></div>` : ''}
+    <div class="rc-akcio-b"><small>Akció${vege ? ' · ' + esc(vege) + '-ig' : ''}</small><h3>${esc(A.cim || '')}</h3>${A.szoveg ? `<p>${esc(A.szoveg).replace(/\n/g, '<br>')}</p>` : ''}
+    ${A.kod ? `<button type="button" class="rc-akcio-kod" title="Kód másolása"><span>Kód</span><b>${esc(A.kod)}</b></button>` : ''}
+    <div class="rc-akcio-gombok">${tel ? `<a class="btn btn-gold" href="${telHref(tel)}">${esc(A.gomb || 'Bejelentkezem')}</a>` : ''}<button type="button" class="btn btn-ghost rc-akcio-x">${tel ? 'Később' : 'Rendben'}</button></div></div>
+    <button type="button" class="rc-akcio-zar" aria-label="Bezárás">×</button></div>`;
+  document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('on'));
+  const zar = () => { el.classList.remove('on'); setTimeout(() => el.remove(), 400); removeEventListener('keydown', esck); };
+  const esck = (e) => { if (e.key === 'Escape') zar(); }; addEventListener('keydown', esck);
+  el.querySelectorAll('.rc-akcio-bg, .rc-akcio-x, .rc-akcio-zar').forEach((b) => b.addEventListener('click', zar));
+  const kb = el.querySelector('.rc-akcio-kod'); if (kb) kb.addEventListener('click', () => { try { navigator.clipboard.writeText(A.kod); kb.querySelector('span').textContent = 'Másolva ✓'; } catch { /* a kód így is látszik */ } });
+}
