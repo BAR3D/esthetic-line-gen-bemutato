@@ -399,3 +399,6 @@ main { min-height: 100vh; }
 /* szolgáltatónál a csoport-kártya alján a terem képe */
 .brand-card .brand-cover { margin: auto -30px -30px; margin-top: 22px; height: 150px; background-size: cover; background-position: center; border-top: 1px solid rgba(var(--accent-rgb), .25); transition: transform .6s var(--ease); }
 .brand-card:hover .brand-cover { transform: scale(1.04); }
+/* adatlap: vissza gomb (az árlistára / az előző oldalra) */
+.pd-back { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 18px; padding: 7px 14px; border-radius: 99px; font-size: 13px; color: var(--ink-2); border: 1px solid var(--line-2); transition: .25s; }
+.pd-back:hover { color: var(--gold); border-color: var(--gold); }

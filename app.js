@@ -8,6 +8,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 let S = null; // site.json – a bolt tartalma
+window.__prevHash = ''; { let cur = location.hash; addEventListener('hashchange', () => { window.__prevHash = cur; cur = location.hash; }); }   // az előző oldal (a „Vissza” gombhoz)
 let C = null; // config.json – a felépítés modellje (szövegek, csoportok, színek, szállítás)
 
 /* ---------- osztályozás (a config.json-ból töltődik) ---------- */
@@ -456,6 +457,7 @@ function product(slug) {
   });
   return `
   <section class="page wrap">
+    <a class="pd-back" href="#/termekek" onclick="if (window.__prevHash) { history.back(); return false; }">← Vissza${window.__prevHash && !/^#\/termekek/.test(window.__prevHash) ? '' : ': ' + esc(L_('itemsNav', 'Termékek'))}</a>
     <div class="pd">
       <div class="gallery rv">
         <div class="main"><img src="${pimg(p)}" alt="${esc(p.name)}"></div>
