@@ -83,6 +83,16 @@ LAYOUTS.recepcio = function () {
     $$('.rc-arrow').forEach((b) => FX.on(b, 'click', () => { target += (+b.dataset.d * 360) / N; }));
     const turnTo = (i) => { target = target - norm(target) + (i * 360) / N; if (norm(target) - norm(ang) > 180) target -= 360; };
     chips.forEach((c) => FX.on(c, 'click', () => turnTo(+c.dataset.i)));
+    const pick = $('.rc-pick', stage), pb = pick && $('.rc-pick-b', pick), go = $('.rc-go', stage);
+    const pickPlace = () => { const l = $('.rc-pick-l', pick), dk = $('.rc-desk', stage), tm = $$('.rc-team.in .rc-tm', stage); if (!l || !dk || innerWidth <= 1250) return;
+      const D = dk.getBoundingClientRect(), tl = tm.length ? Math.min(...tm.map((x) => x.getBoundingClientRect().left)) : D.left + 400, edge = Math.min(tl - 14, D.left + 160);
+      const tb = tm.length ? Math.max(...tm.map((x) => x.getBoundingClientRect().bottom)) : 0; l.style.bottom = tb ? (D.bottom - tb) + 'px' : '';   // az alja egy vonalban a csapatkártyáéval
+      if (edge - 260 < 8) { l.style.right = ''; l.style.left = '0px'; l.style.bottom = ''; } else { l.style.left = 'auto'; l.style.right = (D.right - edge) + 'px'; } };   // a csapatkártyák elé, a bal felső üres részbe
+    const pickSet = (on) => { if (!pick) return; if (on) pickPlace(); pick.classList.toggle('on', on); pb.setAttribute('aria-expanded', on ? 'true' : 'false'); };
+    if (pick) { FX.on(pb, 'click', () => pickSet(!pick.classList.contains('on')));
+      $$('li', pick).forEach((li) => FX.on(li, 'click', () => { turnTo(+li.dataset.i); pickSet(false); }));
+      FX.on(document, 'click', (e) => { if (!e.target.closest('.rc-pick')) pickSet(false); }); FX.on(document, 'keydown', (e) => { if (e.key === 'Escape') pickSet(false); }); }
+    const pickFront = (i) => { if (pick) { $('span', pb).textContent = rooms[i] ? rooms[i].name : ''; $$('li', pick).forEach((li, k) => li.setAttribute('aria-selected', k === i ? 'true' : 'false')); } if (go) go.dataset.open = i; };
     FX.on(window, 'keydown', (e) => { if (room.classList.contains('on')) { if (e.key === 'Escape') close(); return; } if (e.key === 'ArrowLeft') target -= 360 / N; if (e.key === 'ArrowRight') target += 360 / N; });
     // belépés egy terembe
     const open = (i) => {
@@ -111,7 +121,7 @@ LAYOUTS.recepcio = function () {
       const tf = `translateZ(${(r * (0.3 + zoom * 1.05) - (1 - ease) * r * 1.6).toFixed(1)}px) rotateY(${(-ang + (1 - ease) * 40).toFixed(2)}deg)`;
       if (tf !== lastT) { lastT = tf; ring.style.transform = tf; }
       const front = Math.round(norm(ang) / (360 / N)) % N;
-      if (front !== lastFront) { lastFront = front; panels.forEach((p, i) => p.classList.toggle('front', i === front)); chips.forEach((c, i) => c.classList.toggle('on', i === front)); }
+      if (front !== lastFront) { lastFront = front; panels.forEach((p, i) => p.classList.toggle('front', i === front)); chips.forEach((c, i) => c.classList.toggle('on', i === front)); pickFront(front); }
       if (front !== lastTeam) { lastTeam = front; showTeam(front); }
     });
   });
@@ -124,8 +134,9 @@ LAYOUTS.recepcio = function () {
       </div></div>
       <div class="rc-team" aria-live="polite"></div>
       <div class="rc-desk"><span class="rc-avatar${LG ? ' rc-lg' : ''}" aria-hidden="true">${LG ? esc(LG.betu || '') : ''}</span><div><small>RECEPCIÓ · ${esc(C.name)}</small><p>${esc(C.recepcio && C.recepcio.koszones || 'Szép napot! Örülünk, hogy itt vagy. Merre kísérhetünk?')}</p>
-        <div class="rc-chips">${rooms.map((s, i) => `<button class="rc-chip" type="button" data-i="${i}">${esc(s.name)}</button>`).join('')}</div>
-        <div class="rc-deskcta"><button class="btn btn-gold" type="button" data-open="0">Belépek: ${esc(rooms[0] ? rooms[0].name : '')} →</button>${tel ? `<a class="btn btn-ghost" href="${telHref(tel)}">${esc(tel)}</a>` : ''}</div></div></div>
+        <div class="rc-deskcta"><div class="rc-pick"><button class="rc-pick-b" type="button" aria-haspopup="listbox" aria-expanded="false"><small>Terem</small><span>${esc(rooms[0] ? rooms[0].name : '')}</span><i aria-hidden="true">▾</i></button>
+          <ul class="rc-pick-l" role="listbox">${rooms.map((s, i) => `<li role="option" data-i="${i}"><b>${String(i + 1).padStart(2, '0')}</b>${esc(s.name)}</li>`).join('')}</ul></div>
+          <button class="btn btn-gold rc-go" type="button" data-open="0">Belépek →</button>${tel ? `<a class="btn btn-ghost" href="${telHref(tel)}">${esc(tel)}</a>` : ''}</div></div></div>
       <button class="rc-arrow l" data-d="-1" type="button" aria-label="Balra">‹</button><button class="rc-arrow r" data-d="1" type="button" aria-label="Jobbra">›</button>
       <small class="rc-hint">húzd oldalra – nézz körül a szalonban</small>
       <div class="rc-beam b1"></div><div class="rc-beam b2"></div><div class="rc-beam b3"></div>

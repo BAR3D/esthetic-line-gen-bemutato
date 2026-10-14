@@ -292,3 +292,29 @@ body.rc-lux { background: #0b0a08; }
 .rc-desk p, .rc-luxus .rc-desk p { font-size: clamp(15px, 1.25vw, 18px); line-height: 1.25; margin: 2px 0 8px; }
 .rc-chips { gap: 6px; } .rc-chip { padding: 5px 11px; font-size: 12px; }
 .rc-deskcta { margin-top: 8px; gap: 8px; } .rc-deskcta .btn { padding: 7px 14px; font-size: 13px; }
+/* recepciós pult: a termek gombsora helyett saját, sötét-arany legördülő menü (nem a böngésző fehér listája) */
+.rc-deskcta { align-items: center; }
+.rc-pick { position: relative; }
+.rc-pick-b { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 14px; border-radius: 99px; cursor: pointer; font-size: 13px; color: #f4ecdc;
+  background: linear-gradient(160deg, rgba(40,34,22,.9), rgba(12,11,9,.95)); border: 1px solid rgba(226,194,122,.55); }
+.rc-pick-b small { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: #e2c27a; }
+.rc-pick-b span { font-weight: 600; } .rc-pick-b i { font-style: normal; font-size: 11px; color: #e2c27a; transition: transform .25s; }
+.rc-pick.on .rc-pick-b i { transform: rotate(180deg); } .rc-pick-b:hover, .rc-pick.on .rc-pick-b { border-color: #f7e3a8; box-shadow: 0 0 18px rgba(226,194,122,.35); }
+.rc-pick-l { position: absolute; left: 0; bottom: calc(100% + 8px); min-width: 250px; margin: 0; padding: 6px; list-style: none; z-index: 30; border-radius: 16px;
+  background: linear-gradient(160deg, rgba(30,26,18,.98), rgba(8,8,7,.98)); border: 1px solid rgba(226,194,122,.55); box-shadow: 0 24px 60px rgba(0,0,0,.8), 0 0 30px rgba(226,194,122,.15);
+  opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity .2s, transform .2s; }
+.rc-pick.on .rc-pick-l { opacity: 1; transform: none; pointer-events: auto; }
+.rc-pick-l li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; font-size: 13px; color: #e9dec6; cursor: pointer; white-space: nowrap; }
+.rc-pick-l li b { font-size: 10px; letter-spacing: .1em; color: #a8905a; font-weight: 600; }
+.rc-pick-l li:hover { background: rgba(226,194,122,.12); color: #fff3d0; }
+.rc-pick-l li[aria-selected="true"] { background: linear-gradient(135deg, #f7e3a8, #c9a24f); color: #1a1308; } .rc-pick-l li[aria-selected="true"] b { color: #5a4420; }
+.rc-vilagos .rc-pick-b, .rc-vilagos .rc-pick-l { background: #fff; color: var(--ink); } .rc-vilagos .rc-pick-l li { color: var(--ink-2); }
+.rc-deskcta .btn { height: 34px; padding: 0 16px; display: inline-flex; align-items: center; }
+.rc-desk p, .rc-luxus .rc-desk p { font-size: clamp(14px, 1.1vw, 16px); margin: 2px 0 8px; }
+.rc-desk { width: min(820px, 94vw); padding: 12px 18px; }
+/* a terem-lista a pult fölött, a bal felső üres részben nyílik (nem takarja a pultot); keskeny képernyőn a gomb fölött */
+.rc-desk .rc-pick { position: static; }
+.rc-desk .rc-pick-l { left: auto; right: calc(100% - 160px); bottom: calc(100% + 12px); transform: translateY(8px); }   /* a pult fölött, balra: a csapatkártya melletti üres részbe */
+.rc-desk .rc-pick.on .rc-pick-l { transform: none; }
+.rc-pick.on .rc-pick-b i { transform: rotate(180deg); }
+@media (max-width: 1250px) { .rc-desk .rc-pick { position: relative; } .rc-desk .rc-pick-l { left: 0; bottom: calc(100% + 8px); transform: translateY(6px); } .rc-pick.on .rc-pick-b i { transform: rotate(180deg); } }
