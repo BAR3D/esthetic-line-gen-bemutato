@@ -285,3 +285,10 @@ body.rc-lux { background: #0b0a08; }
 /* a két szárny tükörszimmetrikus árnyalatú – a résnél nem üt el egymástól */
 .rc-luxus .rc-doors .l { background: linear-gradient(90deg, rgba(12,11,9,.97), rgba(24,21,15,.95)); }
 .rc-luxus .rc-doors .r { background: linear-gradient(270deg, rgba(12,11,9,.97), rgba(24,21,15,.95)); }
+/* tömör recepciós pult: kisebb betű, szélesebb pult – a termek egy sorba férnek, kevesebb sort foglal */
+.rc-desk { width: min(980px, 94vw); grid-template-columns: 46px 1fr; gap: 14px; padding: 14px 20px; align-items: center; }
+.rc-avatar { width: 46px; height: 46px; } .rc-avatar.rc-lg { font-size: 22px; }
+.rc-desk small { font-size: 9.5px; }
+.rc-desk p, .rc-luxus .rc-desk p { font-size: clamp(15px, 1.25vw, 18px); line-height: 1.25; margin: 2px 0 8px; }
+.rc-chips { gap: 6px; } .rc-chip { padding: 5px 11px; font-size: 12px; }
+.rc-deskcta { margin-top: 8px; gap: 8px; } .rc-deskcta .btn { padding: 7px 14px; font-size: 13px; }
