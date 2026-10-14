@@ -72,7 +72,8 @@ LAYOUTS.recepcio = function () {
     const norm = (a) => ((a % 360) + 360) % 360;
     // húzás csak valódi mozgásnál kapja el az egeret – különben a kattintás eljut a teremhez (pointer capture miatt nem jutott el)
     let down = false, pid = 0;
-    FX.on(stage, 'pointerdown', (e) => { if (e.target.closest('button, .rc-desk')) return; down = true; drag = false; lx = e.clientX; moved = 0; pid = e.pointerId; });
+    FX.on(stage, 'pointerdown', (e) => { moved = 0; if (e.target.closest('button, .rc-desk')) return; down = true;   // minden lenyomás nullázza az előző húzást (különben a nyílra kattintást elnyelte)
+     drag = false; lx = e.clientX; moved = 0; pid = e.pointerId; });
     FX.on(stage, 'pointermove', (e) => { if (!down) return; const d = e.clientX - lx; lx = e.clientX; moved += Math.abs(d); if (!drag && moved > 6) { drag = true; try { stage.setPointerCapture(pid); } catch { /* */ } stage.classList.add('drag'); } if (drag) target -= d * 0.22; });
     const up = () => { if (!down) return; down = false; if (drag) { drag = false; stage.classList.remove('drag'); const step = 360 / N; target = Math.round(target / step) * step; } };
     FX.on(stage, 'pointerup', up); FX.on(stage, 'pointercancel', up);
