@@ -12,6 +12,7 @@ LAYOUTS.recepcio = function () {
   const rooms = SKINS.slice(0, 8), N = rooms.length || 1;
   const list = (s) => S.products.filter((p) => has(p, s.cats)).sort((a, b) => (b.price > 0) - (a.price > 0));   // a szalon saját sorrendje marad (a kiemelt kezelések elöl)
   const tel = (C.contact && C.contact.phone) || '';
+  const LG = C.logo || null, erem = (k) => LG ? `<span class="rc-medal ${k}"><b>${esc(LG.betu || '')}</b><em>${esc(C.name || '')}</em><small>${esc(LG.alcim || '')}</small></span>` : `<span>${esc((C.name || '').charAt(0))}</span>`;
   // a csapat (C.csapat): ki melyik teremben dolgozik – a szemben lévő terem előtt és a terem belsejében is megjelenik
   const csap = (i) => (C.csapat || []).filter((m) => rooms[i] && (m.termek || []).includes(rooms[i].k));
   const mono = (n) => esc(String(n).split(/\s+/).map((w) => w[0]).slice(0, 2).join(''));
@@ -25,6 +26,7 @@ LAYOUTS.recepcio = function () {
   lx2Start(() => {
     fontLoad();
     if (lux) document.body.classList.remove('light');   // a sötét luxus téma a saját színeit használja
+    if (LG) $$('.brand-mark').forEach((m) => { m.textContent = LG.betu || ''; m.classList.add('rc-lg'); });
     const stage = $('.rc-stage'), ring = $('.rc-ring'), doors = $('.rc-doors'), panels = $$('.rc-room'), chips = $$('.rc-chip'), room = $('.rc-open'); if (!stage) return;
     // érkezés: az ajtó szétnyílik
     let paused = false; const busy = () => paused || document.hidden || room.classList.contains('on') || !F3.visible(stage);   // ilyenkor semmi nem rajzol
@@ -121,13 +123,13 @@ LAYOUTS.recepcio = function () {
         ${rooms.map((s, i) => `<a class="rc-room" href="#/${NR}/${s.k}" draggable="false"><span class="rc-arch" style="background-image:url(${s.img})"></span><span class="rc-sign"><small>${String(i + 1).padStart(2, '0')}</small><b>${esc(s.name)}</b><em>${LX.needN(s)} ${L_('itemWord', 'kezelés')} · belépek →</em></span><span class="rc-glow"></span></a>`).join('')}
       </div></div>
       <div class="rc-team" aria-live="polite"></div>
-      <div class="rc-desk"><span class="rc-avatar" aria-hidden="true"></span><div><small>RECEPCIÓ · ${esc(C.name)}</small><p>${esc(C.recepcio && C.recepcio.koszones || 'Szép napot! Örülünk, hogy itt vagy. Merre kísérhetünk?')}</p>
+      <div class="rc-desk"><span class="rc-avatar${LG ? ' rc-lg' : ''}" aria-hidden="true">${LG ? esc(LG.betu || '') : ''}</span><div><small>RECEPCIÓ · ${esc(C.name)}</small><p>${esc(C.recepcio && C.recepcio.koszones || 'Szép napot! Örülünk, hogy itt vagy. Merre kísérhetünk?')}</p>
         <div class="rc-chips">${rooms.map((s, i) => `<button class="rc-chip" type="button" data-i="${i}">${esc(s.name)}</button>`).join('')}</div>
         <div class="rc-deskcta"><button class="btn btn-gold" type="button" data-open="0">Belépek: ${esc(rooms[0] ? rooms[0].name : '')} →</button>${tel ? `<a class="btn btn-ghost" href="${telHref(tel)}">${esc(tel)}</a>` : ''}</div></div></div>
       <button class="rc-arrow l" data-d="-1" type="button" aria-label="Balra">‹</button><button class="rc-arrow r" data-d="1" type="button" aria-label="Jobbra">›</button>
       <small class="rc-hint">húzd oldalra – nézz körül a szalonban</small>
       <div class="rc-beam b1"></div><div class="rc-beam b2"></div><div class="rc-beam b3"></div>
-      <div class="rc-doors" aria-hidden="true"><i class="l"><span>${esc((C.name || "").charAt(0))}</span></i><i class="r"><span>${esc((C.name || "").charAt(0))}</span></i><b class="rc-seam"></b><div class="rc-welcome"><small>${esc(C.hero.pill || '')}</small><b>Üdvözlünk az ${esc(C.name)}-ban</b></div></div>
+      <div class="rc-doors" aria-hidden="true"><i class="l">${erem('l')}</i><i class="r">${erem('r')}</i><b class="rc-seam"></b><div class="rc-welcome"><small>${esc(C.hero.pill || '')}</small><b>Üdvözlünk az ${esc(C.name)}-ban</b></div></div>
     </section>
     <div class="rc-open" role="dialog" aria-modal="true"><div class="rc-open-bg"></div><div class="rc-open-in wrap"></div></div>
     <section class="sec wrap rc-about"><div><span class="sec-num">${esc(C.name)}</span><h2>${fill(C.hero.title)}</h2><p class="lead">${fill(C.hero.lead)}</p></div>
