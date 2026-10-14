@@ -168,3 +168,22 @@ body:has(.rc-luxus) .nav a, body:has(.rc-luxus) .brand { color: #f4ecdc; }
 .rc-luxus .rc-brand, .rc-luxus .rc-stage:has(.rc-photo) .rc-brand { top: 10.5%; font-size: clamp(38px, 5.2vw, 92px); }
 .rc-luxus .rc-hint { top: auto; bottom: 18px; left: auto; right: 24px; transform: none; z-index: 5; }
 @media (max-width: 760px) { .rc-luxus .rc-hint { display: none; } .rc-luxus .rc-brand, .rc-luxus .rc-stage:has(.rc-photo) .rc-brand { top: 15.5%; font-size: 34px; } }
+
+/* olvashatóság: a termek névtáblája és a cégtábla saját sötét üveglapot kap */
+.rc-luxus .rc-sign { left: 6%; right: 6%; bottom: 4px; height: auto; padding: 10px 14px 12px; border-radius: 16px; background: linear-gradient(160deg, rgba(20,17,12,.88), rgba(6,6,6,.9)); border: 1px solid rgba(226,194,122,.6); box-shadow: 0 10px 30px rgba(0,0,0,.7), 0 0 24px rgba(226,194,122,.18), inset 0 1px 0 rgba(255,240,200,.18); }
+.rc-luxus .rc-sign b { color: #fff3d0; font-size: 27px; font-weight: 600; text-shadow: 0 0 14px rgba(226,194,122,.55), 0 1px 2px #000; }
+.rc-luxus .rc-sign small { color: #f2d488; } .rc-luxus .rc-sign em { color: #e9dcc0; opacity: 1; transform: none; font-size: 12.5px; }
+.rc-luxus .rc-room .rc-sign em { opacity: .85; }
+.rc-luxus .rc-room.front .rc-sign { border-color: #f7e3a8; box-shadow: 0 10px 30px rgba(0,0,0,.7), 0 0 34px rgba(226,194,122,.45), inset 0 1px 0 rgba(255,240,200,.25); }
+.rc-luxus .rc-room { filter: brightness(.72) saturate(.85); }
+.rc-luxus .rc-brand { padding: .06em .55em .12em; }
+.rc-luxus .rc-brand::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 18px; background: linear-gradient(160deg, rgba(18,15,10,.86), rgba(4,4,4,.9)); border: 1px solid rgba(226,194,122,.65);
+  box-shadow: 0 0 0 6px rgba(0,0,0,.25), 0 20px 50px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,240,200,.25), inset 0 0 40px rgba(226,194,122,.12); }
+.rc-luxus .rc-brand::after { left: 22%; right: 22%; bottom: 10px; }
+
+/* cégtábla: a lap a .rc-brand háttere, a felirat a belső span (így a felirat a lap FÖLÖTT van) */
+.rc-luxus .rc-brand, .rc-luxus .rc-stage:has(.rc-photo) .rc-brand { background: linear-gradient(160deg, rgba(18,15,10,.86), rgba(4,4,4,.9)) !important; -webkit-background-clip: padding-box !important; background-clip: padding-box !important; color: #f7e3a8; animation: none !important;
+  border: 1px solid rgba(226,194,122,.7); border-radius: 18px; filter: none !important; box-shadow: 0 0 0 6px rgba(0,0,0,.25), 0 22px 60px rgba(0,0,0,.8), 0 0 50px rgba(226,194,122,.25), inset 0 1px 0 rgba(255,240,200,.3), inset 0 0 40px rgba(226,194,122,.14); }
+.rc-luxus .rc-brand::before { content: none; }
+.rc-luxus .rc-brand span { display: inline-block; background: linear-gradient(100deg, #c9a24f 0%, #f7e3a8 28%, #fffbe9 45%, #f2d488 60%, #c9a24f 100%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 14px rgba(240,200,110,.85)) drop-shadow(0 0 2px rgba(255,240,200,.6)); animation: rcShine 6s linear infinite; }

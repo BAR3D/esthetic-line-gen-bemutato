@@ -26,14 +26,29 @@ LAYOUTS.recepcio = function () {
     const quick = FX.reduce || /thumb=1/.test(location.search);
     FX.later(() => { doors.classList.add('open'); stage.classList.add('in'); }, quick ? 0 : 1100);
     let intro = quick ? 1 : 0; const t0 = performance.now() + (quick ? 0 : 1100);   // belépő kamera: messziről beúszik
-    if (lux) {   // aranypor a levegőben – az egér elől szétrebben
+    if (lux) {   // aranypor: éles, előrerajzolt szikrák (mag + glória + csillanás) és puha bokeh-fények – az egér elől szétrebbennek
       const { c, g, dpr } = F3.canvas('rc-dust', stage, false); c.style.position = 'absolute'; F3.trackMouse();
-      const P = Array.from({ length: innerWidth < 760 ? 50 : 110 }, () => ({ x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, vx: 0, vy: 0, tw: Math.random() * 6.28 }));
-      FX.tick((t) => { if (!F3.visible(stage)) return; const W = c.width / dpr, H = c.height / dpr, rr = stage.getBoundingClientRect(), mx = F3.mouse.x - rr.left, my = F3.mouse.y - rr.top;
-        g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
-        for (const p of P) { p.y -= 0.00035 * (1 + p.z); if (p.y < -0.05) { p.y = 1.05; p.x = Math.random(); } let x = p.x * W + Math.sin(t / 2200 + p.tw) * 18 * p.z, y = p.y * H; const dx = x - mx, dy = y - my, d = Math.hypot(dx, dy); if (d < 140) { p.vx += (dx / d) * (140 - d) * 0.0009; p.vy += (dy / d) * (140 - d) * 0.0009; } p.vx *= 0.95; p.vy *= 0.95; p.x += p.vx / 10; p.y += p.vy / 10;
-          const a = (0.35 + 0.65 * Math.abs(Math.sin(t / 700 + p.tw))) * p.z, r = 0.6 + p.z * 2.2; const gr = g.createRadialGradient(x, y, 0, x, y, r * 4); gr.addColorStop(0, `rgba(255,226,150,${a})`); gr.addColorStop(1, 'rgba(255,200,90,0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r * 4, 0, 6.3); g.fill(); }
-        g.globalCompositeOperation = 'source-over'; });
+      const fitC = () => { const r = stage.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); c.width = r.width * d; c.height = r.height * d; c.style.width = r.width + 'px'; c.style.height = r.height + 'px'; c._d = d; };
+      fitC(); FX.on(window, 'resize', fitC);
+      const sprite = (sz, star) => { const o = document.createElement('canvas'); o.width = o.height = sz; const x = o.getContext('2d'), h = sz / 2;
+        let gr = x.createRadialGradient(h, h, 0, h, h, h); gr.addColorStop(0, 'rgba(255,250,230,1)'); gr.addColorStop(0.08, 'rgba(255,236,170,.95)'); gr.addColorStop(0.22, 'rgba(240,196,95,.45)'); gr.addColorStop(0.55, 'rgba(226,170,70,.12)'); gr.addColorStop(1, 'rgba(226,170,70,0)'); x.fillStyle = gr; x.fillRect(0, 0, sz, sz);
+        if (star) { x.globalCompositeOperation = 'lighter'; for (const [w, l] of [[sz * 0.018, h * 0.95], [sz * 0.01, h * 0.6]]) { for (const a of [0, Math.PI / 2]) { x.save(); x.translate(h, h); x.rotate(a + (l < h * 0.7 ? Math.PI / 4 : 0)); const lg = x.createLinearGradient(-l, 0, l, 0); lg.addColorStop(0, 'rgba(255,240,200,0)'); lg.addColorStop(0.5, 'rgba(255,250,235,.95)'); lg.addColorStop(1, 'rgba(255,240,200,0)'); x.fillStyle = lg; x.fillRect(-l, -w, l * 2, w * 2); x.restore(); } } }
+        return o; };
+      const SP = sprite(128, false), ST = sprite(160, true), BK = (() => { const o = document.createElement('canvas'); o.width = o.height = 128; const x = o.getContext('2d'), gr = x.createRadialGradient(64, 64, 20, 64, 64, 64); gr.addColorStop(0, 'rgba(255,214,140,.55)'); gr.addColorStop(0.7, 'rgba(255,200,110,.28)'); gr.addColorStop(1, 'rgba(255,200,110,0)'); x.fillStyle = gr; x.beginPath(); x.arc(64, 64, 64, 0, 6.3); x.fill(); return o; })();
+      const mob = innerWidth < 760, mk = (k) => ({ k, x: Math.random(), y: Math.random(), z: 0.35 + Math.random() * 0.65, vx: 0, vy: 0, tw: Math.random() * 6.28 });
+      const P = [...Array.from({ length: mob ? 10 : 18 }, () => mk('b')), ...Array.from({ length: mob ? 60 : 130 }, () => mk('d')), ...Array.from({ length: mob ? 6 : 14 }, () => mk('s'))];
+      FX.tick((t) => { if (!F3.visible(stage)) return; const d = c._d || 1, W = c.width / d, H = c.height / d, rr = stage.getBoundingClientRect(), mx = F3.mouse.x - rr.left, my = F3.mouse.y - rr.top;
+        g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter'; g.imageSmoothingQuality = 'high';
+        for (const p of P) {
+          const sp = p.k === 'b' ? 0.00012 : 0.00035; p.y -= sp * (1 + p.z); if (p.y < -0.08) { p.y = 1.08; p.x = Math.random(); }
+          let x = p.x * W + Math.sin(t / 2400 + p.tw) * 22 * p.z, y = p.y * H; const dx = x - mx, dy = y - my, dd = Math.hypot(dx, dy) || 1;
+          if (p.k !== 'b' && dd < 160) { p.vx += (dx / dd) * (160 - dd) * 0.0011; p.vy += (dy / dd) * (160 - dd) * 0.0011; } p.vx *= 0.95; p.vy *= 0.95; p.x += p.vx / 10; p.y += p.vy / 10;
+          const tw = 0.55 + 0.45 * Math.sin(t / (p.k === 's' ? 420 : 760) + p.tw);
+          if (p.k === 'b') { const r = 40 + p.z * 70; g.globalAlpha = 0.16 + 0.12 * tw; g.drawImage(BK, x - r, y - r, r * 2, r * 2); }
+          else if (p.k === 's') { const r = (14 + p.z * 22) * (0.75 + 0.35 * tw); g.globalAlpha = 0.65 + 0.35 * tw; g.drawImage(ST, x - r, y - r, r * 2, r * 2); }
+          else { const r = (5 + p.z * 9) * (0.85 + 0.25 * tw); g.globalAlpha = (0.55 + 0.45 * tw) * (0.6 + p.z * 0.4); g.drawImage(SP, x - r, y - r, r * 2, r * 2); }
+        }
+        g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; });
     }
     const R = () => Math.max(380, Math.min(innerWidth * 0.5, 820));
     panels.forEach((p, i) => p.style.setProperty('--a', (i * 360) / N + 'deg'));
@@ -81,7 +96,7 @@ LAYOUTS.recepcio = function () {
 
   return `<div class="lx2 rc rc-${tema}">
     <section class="rc-stage" aria-label="A szalon recepciója – húzd oldalra a körbenézéshez">
-      ${C.recepcio && C.recepcio.hatter ? `<div class="rc-photo" style="background-image:url(${img(C.recepcio.hatter)})"></div>` : ''}<div class="rc-sky"></div><div class="rc-wall"></div><div class="rc-brand" aria-hidden="true">${esc(C.name)}</div><div class="rc-strip"></div><div class="rc-halo"></div><div class="rc-floor"></div>
+      ${C.recepcio && C.recepcio.hatter ? `<div class="rc-photo" style="background-image:url(${img(C.recepcio.hatter)})"></div>` : ''}<div class="rc-sky"></div><div class="rc-wall"></div><div class="rc-brand" aria-hidden="true"><span>${esc(C.name)}</span></div><div class="rc-strip"></div><div class="rc-halo"></div><div class="rc-floor"></div>
       <div class="rc-scene"><div class="rc-ring">
         ${rooms.map((s, i) => `<a class="rc-room" href="#/${NR}/${s.k}" draggable="false"><span class="rc-arch" style="background-image:url(${s.img})"></span><span class="rc-sign"><small>${String(i + 1).padStart(2, '0')}</small><b>${esc(s.name)}</b><em>${LX.needN(s)} ${L_('itemWord', 'kezelés')} · belépek →</em></span><span class="rc-glow"></span></a>`).join('')}
       </div></div>
