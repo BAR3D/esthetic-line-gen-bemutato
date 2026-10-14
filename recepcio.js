@@ -145,27 +145,38 @@ LAYOUTS.recepcio = function () {
   const go = () => { if (typeof C === 'undefined' || C.layout !== 'recepcio') return;
     if (C.logo) $$('.brand-mark').forEach((m) => { m.textContent = C.logo.betu || ''; m.classList.add('rc-lg'); });
     const lux = C.recepcio && C.recepcio.tema === 'luxus';
-    if (lux && !document.body.__rcLux) { document.body.__rcLux = 1; const fix = () => { if (document.body.classList.contains('light')) document.body.classList.remove('light'); document.body.classList.add('rc-lux'); };
+    if (lux && !document.body.__rcLux) { document.body.__rcLux = 1; const fix = () => { const cl = document.body.classList; if (cl.contains('light')) cl.remove('light'); if (!cl.contains('rc-lux')) cl.add('rc-lux'); };   // csak valódi változáskor ír (különben a figyelő önmagát hívná végtelenül)
       fix(); new MutationObserver(fix).observe(document.body, { attributes: true, attributeFilter: ['class'] }); }   // a sötét luxus téma MINDEN aloldalon (közvetlen megnyitásnál is) – soha ne villanjon be a világos
-    if (lux) rcFloat();
+    if (lux) rcFloat(); else { const o = document.querySelector('.rc-float'); if (o) o.remove(); }
+    const nl = document.getElementById('navLinks'); if (nl && !nl.querySelector('a.rc-home')) { const a = document.createElement('a'); a.href = '#/'; a.className = 'rc-home'; a.textContent = 'Főoldal'; nl.prepend(a); }
+    $$('#navLinks a.rc-home').forEach((a) => a.classList.toggle('on', !location.hash || location.hash === '#/' || location.hash === '#'));
     if (!(C.recepcio && C.recepcio.teljesMenu)) $$('#navLinks a').forEach((a) => { const h = (a.getAttribute('href') || '').slice(2); if (h === 'markak' || h === (typeof NR !== 'undefined' ? NR : '')) a.remove(); }); };
-  // árlista: a kínálat kis 3D-s másolatai lebegnek és forognak a lap két szélén (csak CSS-animáció, a videókártyán fut)
+  // árlista: a szalon eszközeinek és termékeinek apró, finom arany 3D-s másolatai lebegnek a lap két szélén (csak CSS-animáció)
+  const RC_OBJ = {
+    tegely: '<ellipse cx="32" cy="46" rx="18" ry="6" fill="url(#rcgD)"/><rect x="14" y="30" width="36" height="16" fill="url(#rcgB)"/><ellipse cx="32" cy="30" rx="18" ry="6" fill="url(#rcgL)"/><rect x="16" y="20" width="32" height="10" rx="2" fill="url(#rcgB)"/><ellipse cx="32" cy="20" rx="16" ry="5" fill="url(#rcgL)"/>',
+    szerum: '<rect x="22" y="28" width="20" height="26" rx="5" fill="url(#rcgB)"/><rect x="25" y="31" width="5" height="18" rx="2.5" fill="#fff6d8" opacity=".35"/><rect x="27" y="20" width="10" height="9" rx="1.5" fill="url(#rcgD)"/><path d="M28 20 C28 10 36 10 36 20 Z" fill="url(#rcgL)"/>',
+    lakk: '<rect x="20" y="30" width="24" height="24" rx="4" fill="url(#rcgB)"/><rect x="23" y="33" width="5" height="17" rx="2.5" fill="#fff6d8" opacity=".35"/><rect x="27" y="10" width="10" height="21" rx="2" fill="url(#rcgD)"/>',
+    ollo: '<circle cx="20" cy="46" r="7" fill="none" stroke="url(#rcgB)" stroke-width="3.5"/><circle cx="40" cy="48" r="7" fill="none" stroke="url(#rcgB)" stroke-width="3.5"/><path d="M24 40 L44 8 L46 10 L29 42 Z" fill="url(#rcgL)"/><path d="M36 42 L22 9 L19 11 L31 44 Z" fill="url(#rcgB)"/><circle cx="31" cy="34" r="2" fill="#1a1308"/>',
+    fesu: '<rect x="8" y="22" width="48" height="9" rx="3" fill="url(#rcgL)"/>' + Array.from({ length: 11 }, (_, k) => `<rect x="${10 + k * 4.2}" y="30" width="2.2" height="${k % 2 ? 12 : 16}" rx="1" fill="url(#rcgB)"/>`).join(''),
+    ko: '<ellipse cx="32" cy="48" rx="20" ry="7" fill="url(#rcgD)"/><ellipse cx="32" cy="45" rx="20" ry="7" fill="url(#rcgB)"/><ellipse cx="33" cy="35" rx="15" ry="5.5" fill="url(#rcgD)"/><ellipse cx="33" cy="32" rx="15" ry="5.5" fill="url(#rcgB)"/><ellipse cx="31" cy="23" rx="10" ry="4" fill="url(#rcgD)"/><ellipse cx="31" cy="21" rx="10" ry="4" fill="url(#rcgL)"/>',
+    szarito: '<circle cx="26" cy="24" r="14" fill="url(#rcgB)"/><circle cx="26" cy="24" r="7" fill="url(#rcgD)"/><rect x="38" y="18" width="16" height="12" rx="3" fill="url(#rcgL)"/><rect x="20" y="36" width="10" height="20" rx="4" fill="url(#rcgB)"/>',
+    ecset: '<rect x="29" y="26" width="6" height="30" rx="3" fill="url(#rcgD)"/><rect x="28" y="20" width="8" height="8" rx="1" fill="url(#rcgL)"/><path d="M28 21 C26 12 30 6 32 4 C34 6 38 12 36 21 Z" fill="url(#rcgB)"/>',
+  };
+  const RC_TEREM = { arc: ['tegely', 'szerum', 'ecset'], szortelenites: ['szerum'], test: ['ko', 'szerum'], fodraszat: ['ollo', 'fesu', 'szarito'], manikur: ['lakk'], berlet: ['tegely'] };
   function rcFloat() {
     const on = /^#\/termekek/.test(location.hash), old = document.querySelector('.rc-float');
-    if (!on || typeof S === 'undefined' || !S || !S.products) { if (old && !on) old.remove(); return; }
+    if (!on) { if (old) old.remove(); return; }
     const pg = document.querySelector('.page.wrap'); if (!pg) return;
     const r = pg.getBoundingClientRect(), mg = Math.min(r.left, innerWidth - r.right);
     if (old && old.__w === innerWidth) return; if (old) old.remove();
-    if (mg < 120) return;   // keskeny képernyőn nincs hely a széleken – nem takarhatja a listát
-    const ims = [...new Set(S.products.map((p) => pimg(p)).filter(Boolean))].slice(0, 12); if (!ims.length) return;
+    if (mg < 110) return;   // keskeny képernyőn nincs hely a széleken – nem takarhatja a listát
+    let kinds = [...new Set((typeof SKINS !== 'undefined' ? SKINS : []).flatMap((x) => RC_TEREM[x.k] || []))]; if (kinds.length < 4) kinds = Object.keys(RC_OBJ);
     const L = document.createElement('div'); L.className = 'rc-float'; L.setAttribute('aria-hidden', 'true'); L.__w = innerWidth;
-    const n = Math.min(12, Math.max(6, Math.round(innerHeight / 150)) * 2), sz = Math.max(70, Math.min(150, mg * 0.55));
-    let h = '';
-    for (let i = 0; i < n; i++) { const left = i % 2 === 0, k = Math.floor(i / 2), rows = Math.ceil(n / 2), s = Math.round(sz * (0.7 + Math.random() * 0.45));
-      const x = left ? 12 + Math.random() * Math.max(0, mg - s - 24) : innerWidth - mg + 12 + Math.random() * Math.max(0, mg - s - 24), y = ((k + 0.15 + Math.random() * 0.6) / rows) * 100;
-      const im = ims[i % ims.length], d = (16 + Math.random() * 14).toFixed(1), f = (5 + Math.random() * 4).toFixed(1), dl = (-Math.random() * 20).toFixed(1);
-      h += `<div class="rc-fl" style="left:${x.toFixed(0)}px;top:calc(${y.toFixed(1)}% - ${s / 2}px);--s:${s}px;--f:${f}s;--dl:${dl}s"><div class="rc-fl-in" style="--d:${d}s;--rx:${(Math.random() * 24 - 12).toFixed(0)}deg;${Math.random() < 0.5 ? 'animation-direction:reverse;' : ''}">
-        <i class="rc-fl-f" style="background-image:url(${im})"></i><b></b><b></b><b></b><b></b><i class="rc-fl-b"><span>${esc((C.logo && C.logo.betu) || (C.name || '').charAt(0))}</span></i></div></div>`; }
+    const n = Math.min(10, Math.max(3, Math.round(innerHeight / 220)) * 2), sz = Math.max(38, Math.min(64, mg * 0.32));
+    let h = '<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rcgL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3d0"/><stop offset=".5" stop-color="#e2c27a"/><stop offset="1" stop-color="#a8812f"/></linearGradient><linearGradient id="rcgB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a6a2e"/><stop offset=".35" stop-color="#f7e3a8"/><stop offset=".6" stop-color="#d4ad5c"/><stop offset="1" stop-color="#6e5426"/></linearGradient><linearGradient id="rcgD" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a4420"/><stop offset=".4" stop-color="#b8924a"/><stop offset="1" stop-color="#4a381a"/></linearGradient></defs></svg>';
+    for (let i = 0; i < n; i++) { const left = i % 2 === 0, k = Math.floor(i / 2), rows = Math.ceil(n / 2), s = Math.round(sz * (0.8 + Math.random() * 0.4));
+      const x = left ? mg * 0.15 + Math.random() * Math.max(0, mg * 0.6 - s) : innerWidth - mg * 0.75 + Math.random() * Math.max(0, mg * 0.6 - s), y = ((k + 0.2 + Math.random() * 0.6) / rows) * 100;
+      h += `<div class="rc-fl" style="left:${x.toFixed(0)}px;top:${y.toFixed(1)}%;--s:${s}px;--f:${(6 + Math.random() * 5).toFixed(1)}s;--d:${(9 + Math.random() * 7).toFixed(1)}s;--dl:${(-Math.random() * 12).toFixed(1)}s;--r0:${(Math.random() * 30 - 15).toFixed(0)}deg"><svg viewBox="0 0 64 64">${RC_OBJ[kinds[i % kinds.length]]}</svg></div>`; }
     L.innerHTML = h; document.body.appendChild(L);
   }
   window.addEventListener('resize', () => { if (typeof C !== 'undefined' && C.recepcio && C.recepcio.tema === 'luxus') { const o = document.querySelector('.rc-float'); if (o) o.remove(); rcFloat(); } });
