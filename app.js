@@ -30,7 +30,14 @@ const WS_ID = 10000000, wsTermek = (id) => id >= WS_ID;
 const SVC = () => C.mode === 'szolgaltatas' && KAT !== 'ws' && !(location.hash.startsWith('#/penztar') && cart.items.some((i) => wsTermek(i.id)));
 function wsBetolt() {
   if (!C.webshop) return Promise.resolve(null);
-  return WS_PROMISE || (WS_PROMISE = fetch('data/webshop.json?v=' + C.version).then((r) => r.json()).then((W) => {
+  return WS_PROMISE || (WS_PROMISE = fetch('data/webshop.json?v=' + C.version).then((r) => r.json()).then(async (W) => {
+    if (C.elo && !/[?&]statikus=1/.test(location.search)) try {   // élő webshop (Szalon-admin → Webshop): ár, készlet, leírás, kép, új termékek
+      const ac = new AbortController(), to = setTimeout(() => ac.abort(), 3000), L = await (await fetch(C.elo + '/elo-webshop', { cache: 'no-store', signal: ac.signal })).json(); clearTimeout(to);
+      const O = new URL(C.elo).origin, K = (u) => (u && u.startsWith('/api/') ? O + u : u || '');
+      if (L && Array.isArray(L.termekek)) W.products = L.termekek.map((p) => { const sale = p.akciosAr != null && p.ar != null && p.akciosAr < p.ar;
+        return { id: p.id, slug: p.slug, name: p.name, brand: p.brand, cats: p.cats || [], tags: [], price: sale ? p.akciosAr : (p.ar ?? 0), regular: p.ar ?? 0, priceMax: null, onSale: sale,
+          inStock: p.keszleten !== false, sku: '', unit: '', priceLabel: '', options: [], variants: [], short: p.rovid ? `<p>${esc(p.rovid)}</p>` : '', desc: bek(p.leiras), images: (p.kepek || []).map(K), url: '' }; });
+    } catch { /* a beépített termékekkel megy tovább */ }
     KATS.ws = { products: W.products, types: W.types, brands: W.lines, skins: (W.needs || []).map((x) => ({ ...x, img: img(x.img) })), labels: { ...C.labels, ...W.labels, itemsNav: W.nev + ' webshop', shopEyebrow: 'Webshop · ' + W.nev, addShort: 'Kosárba', addLong: 'Kosárba teszem', addedToast: 'Kosárba tettem ✓' } };
     window.WS_ADAT = W; return W; }).catch(() => null));
 }
@@ -785,12 +792,14 @@ setInterval(checkUpdate, 60000);
 /* ---------- élő tartalom (Szalon-admin, bluffparlor.com/szalonadmin/) ----------
    C.elo = 'https://…/api/szalon/<oldal>' → a kezelések, árak, leírások, termek, munkatársak, háttér és az akció onnan jönnek.
    Ha a szerver nem válaszol 3 mp-en belül, a beépített (data/) tartalom marad – az oldal sosem üres. */
+// szerkesztőből jövő szöveg → HTML: üres sor = új bekezdés, „## ” = alcím, „• ” kezdetű sorok = felsorolás
+const bek = (x) => String(x || '').split(/\n{2,}/).map((b) => b.trim()).filter(Boolean).map((b) => b.startsWith('## ') ? `<h3>${esc(b.slice(3))}</h3>`
+  : /^• /.test(b) ? `<ul>${b.split(/\n/).map((l) => `<li>${esc(l.replace(/^• /, ''))}</li>`).join('')}</ul>` : `<p>${esc(b).replace(/\n/g, '<br>')}</p>`).join('');
 async function eloTartalom() {
   if (!C.elo || /[?&]statikus=1/.test(location.search)) return;
   let t; try { const ac = new AbortController(), to = setTimeout(() => ac.abort(), 3000); t = await (await fetch(C.elo + '/elo', { cache: 'no-store', signal: ac.signal })).json(); clearTimeout(to); } catch { return; }
   if (!t || !Array.isArray(t.kezelesek)) return;
   const O = new URL(C.elo).origin, K = (u) => (u && u.startsWith('/api/') ? O + u : u || '');
-  const bek = (x) => String(x || '').split(/\n{2,}/).map((b) => b.trim()).filter(Boolean).map((b) => b.startsWith('## ') ? `<h3>${esc(b.slice(3))}</h3>` : `<p>${esc(b).replace(/\n/g, '<br>')}</p>`).join('');
   S.products = t.kezelesek.map((p) => { const sale = p.akciosAr != null && p.ar != null && p.akciosAr < p.ar;
     return { id: p.id, slug: p.slug, name: p.name, brand: p.cat, cats: p.cat ? [p.cat] : [], tags: [], price: sale ? p.akciosAr : (p.ar ?? 0), regular: p.ar ?? 0, priceMax: null, onSale: sale, inStock: true,
       sku: '', unit: '', priceLabel: '', options: [], variants: [], short: p.rovid ? `<p>${esc(p.rovid)}</p>` : '', desc: (p.rovid ? `<p>${esc(p.rovid)}</p>` : '') + bek(p.leiras), images: p.kep ? [K(p.kep)] : [], url: '' }; });
@@ -800,6 +809,7 @@ async function eloTartalom() {
   if (Array.isArray(t.csapat)) C.csapat = t.csapat.map((m) => ({ ...m, kep: K(m.kep) }));
   if (t.kepek && t.kepek.hatter) C.recepcio = { ...(C.recepcio || {}), hatter: K(t.kepek.hatter) };
   if (t.akcio) C.akcio = { ...t.akcio, kep: K(t.akcio.kep) };
+  if (t.helyben) C.helyben = { aktiv: !!t.helyben.aktiv, termekek: (t.helyben.termekek || []).map((x) => ({ ...x, kep: K(x.kep) })) };   // jobb vitrin: csak a szalonban kapható
   if (t.telefon) C.contact = { ...(C.contact || {}), phone: t.telefon };
 }
 

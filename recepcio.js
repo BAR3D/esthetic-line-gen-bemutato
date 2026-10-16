@@ -42,7 +42,10 @@ LAYOUTS.recepcio = function () {
     if (TM && TM.dark) document.body.classList.remove('light');   // a sötét luxus téma a saját színeit használja
     if (LG) $$('.brand-mark').forEach((m) => { m.textContent = LG.betu || ''; m.classList.add('rc-lg'); });
     if (C.webshop && typeof wsBetolt === 'function') wsBetolt().then((W) => { if (!W) return; const L = (W.products || []).filter((p) => p.images && p.images[0] && p.inStock); const pick = (n, k) => L.filter((_, i) => i % 7 === k).slice(0, n);
-      $$('[data-vitrin]').forEach((v) => { v.innerHTML = pick(6, v.dataset.vitrin === 'bal' ? 0 : 3).map((p) => `<img src="${p.images[0]}" alt="" loading="lazy" decoding="async">`).join(''); }); });
+      const H = C.helyben && C.helyben.aktiv ? (C.helyben.termekek || []).filter((x) => x.kep) : null;
+      $$('[data-vitrin]').forEach((v) => { const jobb = v.dataset.vitrin === 'jobb';
+        v.innerHTML = (jobb && H && H.length ? H.slice(0, 6).map((x) => x.kep) : pick(6, jobb ? 3 : 0).map((p) => p.images[0])).map((u) => `<img src="${u}" alt="" loading="lazy" decoding="async">`).join(''); }); });
+    if (C.helyben && C.helyben.aktiv) { const j = $('.rc-vitrin.jobb'); if (j) { j.classList.add('nyitva'); const sz = $('.rc-v-szalag', j); if (sz) sz.remove(); const em = $('.rc-v-tabla em', j); if (em) em.textContent = 'Belépek →'; j.setAttribute('aria-label', 'Helyben kapható termékek'); } }
     const stage = $('.rc-stage'), ring = $('.rc-ring'), doors = $('.rc-doors'), panels = $$('.rc-room'), chips = $$('.rc-chip'), room = $('.rc-open'); if (!stage) return;
     // érkezés: az ajtó szétnyílik
     let paused = false; const busy = () => paused || document.hidden || room.classList.contains('on') || !F3.visible(stage);   // ilyenkor semmi nem rajzol
@@ -215,8 +218,13 @@ function rcAkcio() {
 
 // ---------- HELYBEN KAPHATÓ aloldal (a webshop maga az app.js boltja: körhinta, szűrők, termékoldal, közös kosár – config.webshop) ----------
 window.EXTRA_ROUTES = Object.assign(window.EXTRA_ROUTES || {}, {
-  helyben: () => `<section class="page wrap ws-oldal"><div class="page-head rv"><span class="sec-num">Csak a szalonban</span><h1>Helyben kapható termékek</h1>
+  helyben: () => (C.helyben && C.helyben.aktiv && (C.helyben.termekek || []).length ? `<section class="page wrap ws-oldal"><div class="page-head rv"><span class="sec-num">Csak a szalonban</span><h1>Helyben kapható termékek</h1>
+      <p>Ezeket a termékeket a forgalmazó kérésére csak személyesen, a szalonban vásárolhatod meg. Nézd át otthon kényelmesen, és kérd a következő kezelésed után.</p></div>
+      <div class="hb-racs">${C.helyben.termekek.map((x) => `<article class="hb-kartya"><div class="hb-kep">${x.kep ? `<img src="${x.kep}" alt="${esc(x.nev)}" loading="lazy">` : ''}<span class="hb-cimke">Csak a szalonban</span></div>
+        <div class="hb-b">${x.marka ? `<small>${esc(x.marka)}</small>` : ''}<h3>${esc(x.nev)}</h3>${x.rovid ? `<p>${esc(x.rovid)}</p>` : ''}${x.ar != null ? `<b>${Number(x.ar).toLocaleString('hu-HU')} Ft <span>a szalonban</span></b>` : ''}</div></article>`).join('')}</div>
+      ${C.contact && C.contact.phone ? `<div class="ws-gombok" style="margin-top:22px"><span class="muted">Kérdezz rá, vagy foglald le:</span><a class="btn btn-gold" href="${telHref(C.contact.phone)}">${esc(C.contact.phone)}</a></div>` : ''}</section>`
+    : `<section class="page wrap ws-oldal"><div class="page-head rv"><span class="sec-num">Csak a szalonban</span><h1>Helyben kapható termékek</h1>
       <p>Vannak termékek, amelyeket a forgalmazó csak személyesen, a szalonban enged értékesíteni. Hamarosan itt is végignézheted őket, hogy otthon kényelmesen kiválaszd, mit kérsz a következő kezelésed után.</p></div>
       <div class="ws-hamarosan"><span class="ws-badge">Hamarosan</span><p>Addig kérdezz rá bátran a szalonban, vagy nézd meg a webshop kínálatát.</p>
-      <div class="ws-gombok">${C.webshop ? '<a class="btn btn-gold" href="#/webshop">A webshop kínálata →</a>' : ''}${C.contact && C.contact.phone ? `<a class="btn btn-ghost" href="${telHref(C.contact.phone)}">${esc(C.contact.phone)}</a>` : ''}</div></div></section>`,
+      <div class="ws-gombok">${C.webshop ? '<a class="btn btn-gold" href="#/webshop">A webshop kínálata →</a>' : ''}${C.contact && C.contact.phone ? `<a class="btn btn-ghost" href="${telHref(C.contact.phone)}">${esc(C.contact.phone)}</a>` : ''}</div></div></section>`),
 });
