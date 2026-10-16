@@ -281,8 +281,10 @@ function showcase(list) {
         <a class="btn btn-ghost" href="#/termek/${p.slug}">Részletek</a></div>
       <div class="sc-pick">${list.map((x, i) => `<button class="${i === k ? 'on' : ''}" data-k="${i}" aria-label="${esc(x.name)}"><img src="${pimg(x)}" alt=""></button>`).join('')}</div>`;
     $$('#scInfo [data-k]').forEach(b => b.onclick = () => { k = +b.dataset.k; info(); viewer?.setProduct(list[k]); });
+    const im = el.querySelector('img'); if (im) { im.src = pimg(p); im.alt = p.name; }
   };
   info();
+  if (!el.classList.contains('v3d')) return;   // fotós kiemelés (nincs 3D-profil)
   v3dLib().then(m => { if (el.isConnected) { viewer = m.mount(el, list[0]); viewers.push(viewer); } }).catch(() => el.classList.add('no3d'));
 }
 
@@ -414,7 +416,7 @@ function shop(params) {
   const html = `
   <section class="page wrap">
     <div class="page-head rv"><span class="sec-num">${L_('shopEyebrow', 'Webshop')}</span><h1>${L_('itemsNav', 'Termékek')}</h1><p>${C.labels.shopLead}</p></div>
-    ${KAT === 'ws' && S.products.some(p => p.shape) ? `<div class="showcase glass rv"><div class="v3d" id="ws3d">${hint3d}</div><div class="sc-info" id="scInfo"></div></div>` : ''}
+    ${KAT === 'ws' ? `<div class="showcase glass rv">${S.products.some(p => p.shape) ? `<div class="v3d" id="ws3d">${hint3d}</div>` : '<div class="sc-foto" id="ws3d"><img alt=""></div>'}<div class="sc-info" id="scInfo"></div></div>` : ''}
     <div class="shop">
       <aside class="filters glass" id="filters">
         ${BRANDS.length ? `<div><h4>${C.labels.filterLines}</h4><div class="chips">${BRANDS.map(b => `<button class="chip" data-f="marka" data-v="${b.k}">${esc(b.name)}</button>`).join('')}</div></div>` : ''}
@@ -437,7 +439,7 @@ function shop(params) {
     </div>
   </section>`;
   setTimeout(() => {
-    if (KAT === 'ws') { const sp = S.products.filter(p => p.shape && p.inStock), m = [...new Set(sp.map(p => p.brand))]; showcase(m.flatMap(b => sp.filter(p => p.brand === b).slice(0, 3)).slice(0, 9)); }
+    if (KAT === 'ws') { const sp = S.products.filter(p => (p.shape || (p.images || []).length) && p.inStock), m = [...new Set(sp.map(p => p.brand))]; showcase(m.flatMap(b => sp.filter(p => p.brand === b).slice(0, 3)).slice(0, 9)); }
     const rg = ring($('#fRing'));
     $('#fQ').value = st.q; $('#fSort').value = st.rend; $('#fStock').checked = st.keszlet;
     const draw = () => {

@@ -431,3 +431,8 @@ main { min-height: 100vh; }
 .sc-pick button:hover { transform: translateY(-2px); } .sc-pick button.on { border-color: var(--gold); }
 .sc-pick img { width: 100%; height: 100%; object-fit: contain; }
 @media (max-width: 900px) { .showcase { grid-template-columns: 1fr; } .showcase .v3d { min-height: 380px; } .sc-info { padding: 24px; } }
+
+/* kiemelt termék fotóval (a webshop tetején) */
+.sc-foto { display: grid; place-items: center; min-height: 460px; background: radial-gradient(circle at 50% 45%, #fff 0%, #f3e8e1 60%, #e9d8cf 100%); }
+.sc-foto img { width: 78%; max-height: 400px; object-fit: contain; filter: drop-shadow(0 18px 24px rgba(60,30,30,.18)); transition: opacity .3s; }
+@media (max-width: 900px) { .sc-foto { min-height: 320px; } }
