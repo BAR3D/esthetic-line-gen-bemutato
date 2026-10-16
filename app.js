@@ -582,9 +582,10 @@ function blog() {
 function article(slug) {
   const x = S.posts.find(p => p.slug === slug);
   if (!x) return notFound();
-  const more = S.posts.filter(p => p !== x).slice(0, 3);
+  const more = S.posts.filter(p => p !== x && (!x.forras || p.forras === x.forras)).slice(0, 3);   // ugyanabból a blogból
   return `<section class="page wrap"><article class="article rv">
-    <a class="link-more" href="#/blog">← Blog</a>
+    <a class="link-more" href="#/blog${x.forras ? '/' + x.forras : ''}">← ${esc(x.forras && C.blogSzobak && C.blogSzobak[x.forras] ? C.blogSzobak[x.forras].nev : 'Blog')}</a>
+    ${x.image ? `<a class="pin-gomb" href="https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(location.href.split('#')[0].replace(/[^/]*$/, '') + 'blog/' + x.slug + '/')}&media=${encodeURIComponent(new URL(x.image, location.href).href)}&description=${encodeURIComponent(x.title)}" target="_blank" rel="noopener" aria-label="Mentés a Pinterestre"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.2-2 0-2.9l1.2-5s-.3-.6-.3-1.5c0-1.4.8-2.5 1.8-2.5.9 0 1.3.7 1.3 1.5 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.9 1.6 1.9 1.9 0 3.3-2 3.3-4.9 0-2.6-1.8-4.4-4.5-4.4-3 0-4.8 2.3-4.8 4.6 0 .9.4 1.9.8 2.4l.1.4-.3 1.2c0 .2-.2.3-.4.2-1.3-.6-2.1-2.5-2.1-4 0-3.3 2.4-6.3 6.9-6.3 3.6 0 6.4 2.6 6.4 6 0 3.6-2.3 6.5-5.4 6.5-1.1 0-2.1-.6-2.4-1.2l-.7 2.5c-.2.9-.9 2.1-1.3 2.8A10 10 0 1 0 12 2z"/></svg>Mentés a Pinterestre</a>` : ''}
     <div class="page-head" style="margin-top:16px"><span class="sec-num">${x.date.replaceAll('-', '. ')}.</span><h1>${esc(x.title)}</h1></div>
     ${x.image ? `<div class="cover" style="background-image:url(${x.image})"></div>` : ''}
     <div class="prose">${x.html}</div></article>

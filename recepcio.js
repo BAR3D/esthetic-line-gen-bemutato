@@ -228,3 +228,31 @@ window.EXTRA_ROUTES = Object.assign(window.EXTRA_ROUTES || {}, {
       <div class="ws-hamarosan"><span class="ws-badge">Hamarosan</span><p>Addig kérdezz rá bátran a szalonban, vagy nézd meg a webshop kínálatát.</p>
       <div class="ws-gombok">${C.webshop ? '<a class="btn btn-gold" href="#/webshop">A webshop kínálata →</a>' : ''}${C.contact && C.contact.phone ? `<a class="btn btn-ghost" href="${telHref(C.contact.phone)}">${esc(C.contact.phone)}</a>` : ''}</div></div></section>`),
 });
+
+// ---------- BLOG: két ajtó (config.blogSzobak) – az egyik a szalon, a másik a webshop blogjába visz; bent váltófül ----------
+// #/blog → a két ajtó · #/blog/<szoba> → az adott blog cikkei · #/blog/<cikk> → a cikk (app.js article())
+window.EXTRA_ROUTES = Object.assign(window.EXTRA_ROUTES || {}, {
+  blog: (seg) => {
+    const SZ = C.blogSzobak || {}, kulcsok = Object.keys(SZ);
+    if (!kulcsok.length) return seg[1] ? article(seg[1]) : blog();
+    if (seg[1] && !SZ[seg[1]]) return article(seg[1]);
+    const db = (k) => S.posts.filter((x) => x.forras === k);
+    if (!seg[1]) {   // a két ajtó
+      setTimeout(() => $$('.bl-ajto').forEach((a) => a.addEventListener('click', (e) => {
+        e.preventDefault(); if (a.classList.contains('nyit')) return; a.classList.add('nyit');
+        setTimeout(() => { location.hash = a.getAttribute('href'); }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1050); })));
+      return `<section class="page wrap bl-bejarat"><div class="page-head rv"><span class="sec-num">Blog</span><h1>${esc(C.labels.blogTitle || 'Blog')}</h1>
+        <p>Két szoba, két téma. Lépj be, ahová kedved tartja.</p></div>
+        <div class="bl-ajtok">${kulcsok.map((k) => { const L = db(k), u = L[0]; return `<a class="bl-ajto" href="#/blog/${k}" aria-label="${esc(SZ[k].nev)} – ${L.length} cikk">
+          <span class="bl-keret"><span class="bl-mogotte" style="background-image:url(${u && u.image ? u.image : ''})"></span><span class="bl-feny"></span>
+            <span class="bl-szarny bal"><i></i></span><span class="bl-szarny jobb"><i></i></span></span>
+          <span class="bl-tabla"><small>${esc(SZ[k].alcim || '')}</small><b>${esc(SZ[k].nev)}</b><em>${L.length} cikk · Belépek →</em></span>
+          <span class="bl-leiras">${esc(SZ[k].leiras || '')}</span></a>`; }).join('')}</div></section>`;
+    }
+    const k = seg[1], L = db(k);   // egy „szoba”: a blog cikkei, fent váltófül
+    return `<section class="page wrap bl-szoba"><div class="bl-ful" role="tablist" aria-label="Blogok">${kulcsok.map((x) => `<a role="tab" href="#/blog/${x}" class="${x === k ? 'on' : ''}" aria-selected="${x === k}">${esc(SZ[x].nev)} <span>${db(x).length}</span></a>`).join('')}</div>
+      <div class="page-head rv"><span class="sec-num">${esc(SZ[k].alcim || 'Blog')}</span><h1>${esc(SZ[k].nev)}</h1><p>${esc(SZ[k].leiras || '')}</p></div>
+      <div class="posts">${L.map(postCard).join('') || '<p class="muted">Még nincs cikk.</p>'}</div>
+      <p style="margin-top:26px"><a class="link-more" href="#/blog">← Vissza a két ajtóhoz</a></p></section>`;
+  },
+});
