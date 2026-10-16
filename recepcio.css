@@ -490,3 +490,6 @@ body.rc-lux .bl-leiras { color: var(--rcT2, #d9cdb6); }
 .bl-ful a span { font-size: 12px; opacity: .7; margin-left: 4px; }
 .bl-ful a.on { background: linear-gradient(135deg, var(--rcA1, #f7e3a8), var(--rcA3, #c9a24f)); color: var(--rcINK, #1a1308); }
 @media (prefers-reduced-motion: reduce) { .bl-szarny, .bl-mogotte, .bl-feny { transition: none; } }
+/* blog-előtér: a cím és a bevezető középen, a két ajtó fölött */
+.bl-bejarat .page-head { text-align: center; justify-items: center; margin-inline: auto; max-width: 720px; }
+.bl-bejarat .page-head p { margin-inline: auto; }
