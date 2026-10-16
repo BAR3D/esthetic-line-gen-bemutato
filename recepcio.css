@@ -438,3 +438,8 @@ body.rc-lux .ws-chip.on { background: linear-gradient(135deg, var(--rcA1, #f7e3a
 body.rc-lux .ws-tovabb { color: var(--rcA1, #f7e3a8); border-color: rgba(var(--rcA2r, 226,194,122),.55); }
 body.rc-lux .ws-helyben-link, body.rc-lux .ws-hamarosan { background: rgba(var(--rcD0r, 10,9,7),.6); border-color: rgba(var(--rcA2r, 226,194,122),.5); color: var(--rcT1, #f4ecdc); }
 body.rc-lux .ws-helyben-link span, body.rc-lux .ws-hamarosan p { color: var(--rcT2, #d9cdb6); }
+
+/* 3D-s termék a recepció stílusaiban: világos stúdió a terméknek, sötét lap a szövegnek */
+body.rc-lux .gallery .main.is3d { background: radial-gradient(circle at 50% 45%, #fff 0%, #f3e8e1 60%, #e9d8cf 100%); }
+body.rc-lux .showcase { background: linear-gradient(160deg, rgba(var(--rcD1r, 30,26,18),.94), rgba(var(--rcD0r, 10,9,7),.96)); border: 1px solid rgba(var(--rcA2r, 226,194,122),.35); }
+body.rc-lux .sc-info h3 { color: var(--rcA0, #fff3d0); } body.rc-lux .sc-desc { color: var(--rcT2, #d9cdb6); } body.rc-lux .sc-buy .price { color: var(--rcA0, #fff3d0); }

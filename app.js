@@ -23,8 +23,25 @@ const lineImg = ref => { const [, page, i] = ref.split(':'); const im = S.brandI
 const lineImages = b => (b.pages || []).flatMap(pg => S.brandIntro[pg]?.images || []);
 const lineParas = b => (b.pages || []).flatMap(pg => S.brandIntro[pg]?.paras || []);
 // ár: változatos terméknél „-tól”
-const SVC = () => C.mode === 'szolgaltatas';
+// KATALÓGUSOK: 'alap' (a projekt saját kínálata, pl. kezelések) és 'ws' (config.webshop – egy másik bolt termékei, data/webshop.json).
+// Ugyanaz a bolt (körhinta, szűrők, termékoldal) fut mindkettőn; a kosár közös. A webshop-termékek azonosítója 10 000 000 fölött van.
+let KAT = 'alap'; const KATS = {}; let WS_PROMISE = null;
+const WS_ID = 10000000, wsTermek = (id) => id >= WS_ID;
+const SVC = () => C.mode === 'szolgaltatas' && KAT !== 'ws' && !(location.hash.startsWith('#/penztar') && cart.items.some((i) => wsTermek(i.id)));
+function wsBetolt() {
+  if (!C.webshop) return Promise.resolve(null);
+  return WS_PROMISE || (WS_PROMISE = fetch('data/webshop.json?v=' + C.version).then((r) => r.json()).then((W) => {
+    KATS.ws = { products: W.products, types: W.types, brands: W.lines, skins: (W.needs || []).map((x) => ({ ...x, img: img(x.img) })), labels: { ...C.labels, ...W.labels, itemsNav: W.nev + ' webshop', shopEyebrow: 'Webshop · ' + W.nev, addShort: 'Kosárba', addLong: 'Kosárba teszem', addedToast: 'Kosárba tettem ✓' } };
+    window.WS_ADAT = W; return W; }).catch(() => null));
+}
+function katAllit(k) {
+  if (!KATS.alap) KATS.alap = { products: S.products, types: TYPES, brands: BRANDS, skins: SKINS, labels: C.labels };
+  const T = KATS[k] || KATS.alap; KAT = KATS[k] ? k : 'alap';
+  S.products = T.products; TYPES = T.types; BRANDS = T.brands; SKINS = T.skins; C.labels = T.labels;
+}
+const minden = () => [...(KATS.alap ? KATS.alap.products : S.products), ...(KATS.ws ? KATS.ws.products : [])];
 const L_ = (k, d) => (C.labels && C.labels[k]) || d;
+const L0 = L_;
 const pft = p => p.priceLabel ? p.priceLabel : !p.price ? L_('priceOnRequest', 'Egyedi ajánlat') : p.priceMax && p.priceMax !== p.price ? ft(p.price) + '-tól' : ft(p.price) + (p.unit ? ' / ' + p.unit : '');
 const LY = () => new URLSearchParams(location.search).get('layout') || C.layout || 'korhinta';
 const lineFt = (price, q) => price ? ft(price * q) : L_('priceOnRequest', 'Egyedi ajánlat');
@@ -54,7 +71,7 @@ const cart = {
   set(key, q) { this.items = this.items.map(i => keyOf(i) === key ? { ...i, q } : i).filter(i => i.q > 0); this.save(); },
   get lines() {
     return this.items.map(i => {
-      const p = S.products.find(x => x.id === i.id); if (!p) return null;
+      const p = minden().find(x => x.id === i.id); if (!p) return null;
       const va = i.v ? (p.variants || []).find(x => x.id === +i.v) : null;
       const label = va ? Object.values(va.attrs).join(', ') : i.o || '';
       return { ...i, key: keyOf(i), p, price: va ? va.price : p.price, label };
@@ -245,6 +262,29 @@ function ring(el, opts = {}) {
   return api;
 }
 function disposeRings() { rings.forEach(r => r.dispose()); rings = []; }
+/* ---------- körbeforgatható 3D termék (viewer3d.mjs + three.js, csak ha kell; a termék .shape profilja alapján) ---------- */
+let viewers = [];
+const v3dLib = () => (v3dLib.p ||= import('./viewer3d.mjs'));
+function mount3d(el, p, opts) { if (!el || !p?.shape) return; v3dLib().then(m => { if (el.isConnected) viewers.push(m.mount(el, p, opts)); }).catch(() => el.classList.add('no3d')); }
+function disposeViewers() { viewers.forEach(v => v.dispose()); viewers = []; }
+const hint3d = '<span class="v3d-hint">↔ Húzd el a forgatáshoz</span><span class="v3d-load">3D betöltése…</span>';
+// a webshop tetején: nagy, körbeforgatható termék + választó (a krémvilágos bemutató mintájára)
+function showcase(list) {
+  const el = $('#ws3d'); if (!el || !list.length) return;
+  let k = 0, viewer = null;
+  const info = () => {
+    const p = list[k];
+    $('#scInfo').innerHTML = `<span class="card-brand">${esc(p.brand)}</span><h3>${esc(p.name)}</h3>
+      <div class="prose sc-desc">${p.short || ''}</div>
+      <div class="sc-buy"><span class="price">${ft(p.price)}</span>
+        ${p.inStock ? `<button class="btn btn-gold" data-add="${p.id}">Kosárba</button>` : '<span class="stock no">● Elfogyott</span>'}
+        <a class="btn btn-ghost" href="#/termek/${p.slug}">Részletek</a></div>
+      <div class="sc-pick">${list.map((x, i) => `<button class="${i === k ? 'on' : ''}" data-k="${i}" aria-label="${esc(x.name)}"><img src="${pimg(x)}" alt=""></button>`).join('')}</div>`;
+    $$('#scInfo [data-k]').forEach(b => b.onclick = () => { k = +b.dataset.k; info(); viewer?.setProduct(list[k]); });
+  };
+  info();
+  v3dLib().then(m => { if (el.isConnected) { viewer = m.mount(el, list[0]); viewers.push(viewer); } }).catch(() => el.classList.add('no3d'));
+}
 
 /* ---------- komponensek ---------- */
 const card = p => `
@@ -369,11 +409,12 @@ const postCard = x => `<a class="post glass rv" href="#/blog/${x.slug}"><div cla
 function shop(params) {
   const st = {
     q: params.get('q') || '', marka: params.get('marka') || '', bor: params.get('bor') || '', tipus: params.get('tipus') || '',
-    rend: params.get('rend') || 'ajanlott', keszlet: params.get('keszlet') === '1', nezet: params.get('nezet') || ((window.LAYOUT_META || {})[LY()] || {}).shopView || 'kor',
+    rend: params.get('rend') || 'ajanlott', keszlet: params.get('keszlet') === '1', nezet: params.get('nezet') || (KAT === 'ws' ? 'kor' : ((window.LAYOUT_META || {})[LY()] || {}).shopView) || 'kor',   // a webshop alapból körhinta
   };
   const html = `
   <section class="page wrap">
     <div class="page-head rv"><span class="sec-num">${L_('shopEyebrow', 'Webshop')}</span><h1>${L_('itemsNav', 'Termékek')}</h1><p>${C.labels.shopLead}</p></div>
+    ${KAT === 'ws' && S.products.some(p => p.shape) ? `<div class="showcase glass rv"><div class="v3d" id="ws3d">${hint3d}</div><div class="sc-info" id="scInfo"></div></div>` : ''}
     <div class="shop">
       <aside class="filters glass" id="filters">
         ${BRANDS.length ? `<div><h4>${C.labels.filterLines}</h4><div class="chips">${BRANDS.map(b => `<button class="chip" data-f="marka" data-v="${b.k}">${esc(b.name)}</button>`).join('')}</div></div>` : ''}
@@ -396,6 +437,7 @@ function shop(params) {
     </div>
   </section>`;
   setTimeout(() => {
+    if (KAT === 'ws') { const sp = S.products.filter(p => p.shape && p.inStock), m = [...new Set(sp.map(p => p.brand))]; showcase(m.flatMap(b => sp.filter(p => p.brand === b).slice(0, 3)).slice(0, 9)); }
     const rg = ring($('#fRing'));
     $('#fQ').value = st.q; $('#fSort').value = st.rend; $('#fStock').checked = st.keszlet;
     const draw = () => {
@@ -416,8 +458,8 @@ function shop(params) {
       $$('.seg button').forEach(b => b.classList.toggle('on', b.dataset.nezet === (kor ? 'kor' : 'racs')));
       if (kor) rg.set(r);
       else $('#fGrid').innerHTML = r.length ? r.map(card).join('') : `<div class="empty glass" style="grid-column:1/-1"><p>Nincs ilyen termék. Próbálj kevesebb szűrőt.</p></div>`;
-      const qs = new URLSearchParams(Object.entries(st).filter(([k, v]) => v && !(k === 'rend' && v === 'ajanlott') && !(k === 'nezet' && v === 'kor')).map(([k, v]) => [k, v === true ? '1' : v])).toString();
-      history.replaceState(null, '', '#/termekek' + (qs ? '?' + qs : ''));
+      const qs = new URLSearchParams(Object.entries(st).filter(([k, v]) => v && !(k === 'rend' && v === 'ajanlott') && !(k === 'nezet' && v === (KAT === 'ws' ? 'kor' : (((window.LAYOUT_META || {})[LY()] || {}).shopView || 'kor')))).map(([k, v]) => [k, v === true ? '1' : v])).toString();
+      history.replaceState(null, '', (KAT === 'ws' ? '#/webshop' : '#/termekek') + (qs ? '?' + qs : ''));
     };
     $$('.chip[data-f]').forEach(c => c.onclick = () => { st[c.dataset.f] = st[c.dataset.f] === c.dataset.v ? '' : c.dataset.v; draw(); });
     $('#fQ').oninput = e => { st.q = e.target.value.trim(); draw(); };
@@ -431,7 +473,13 @@ function shop(params) {
   return html;
 }
 
+// a webshop-termékek oldalán a márka / bőrtípus / vissza linkek a webshopon belül maradnak
 function product(slug) {
+  const h = productLap(slug); if (KAT !== 'ws') return h;
+  return h.replaceAll('href="#/termekek"', 'href="#/webshop"').replace(/href="#\/marka\/([\w-]+)"/g, 'href="#/webshop?marka=$1"')
+    .replace(new RegExp('href="#/' + NR + '/([\\w-]+)"', 'g'), 'href="#/webshop?bor=$1"');
+}
+function productLap(slug) {
   const p = bySlug(slug);
   if (!p) return notFound();
   const skins = SKINS.filter(s => has(p, s.cats));
@@ -452,7 +500,10 @@ function product(slug) {
     $$('.opt-chip').forEach(c => c.onclick = () => { pick[c.dataset.a] = c.dataset.t; sync(); });
     if ((p.options || []).length) sync();
     if ($('#relRing')) ring($('#relRing'), { auto: true }).set(rel);
-    $$('.thumbs button').forEach(b => b.onclick = () => { $('.gallery .main img').src = b.dataset.src; $$('.thumbs button').forEach(x => x.classList.toggle('on', x === b)); });
+    mount3d($('#pd3d'), p);
+    $$('.thumbs button').forEach(b => b.onclick = () => { const main = $('.gallery .main');
+      if (b.dataset.mode === '3d') main.classList.add('is3d'); else { main.classList.remove('is3d'); main.querySelector('img').src = b.dataset.src; }
+      $$('.thumbs button').forEach(x => x.classList.toggle('on', x === b)); });
     $$('.qty button').forEach(b => b.onclick = () => { n = Math.max(1, n + +b.dataset.d); $('.qty span').textContent = n; $('#buyBtn').dataset.n = n; });
   });
   return `
@@ -460,8 +511,8 @@ function product(slug) {
     <a class="pd-back" href="#/termekek" onclick="if (window.__prevHash) { history.back(); return false; }">← Vissza${window.__prevHash && !/^#\/termekek/.test(window.__prevHash) ? '' : ': ' + esc(L_('itemsNav', 'Termékek'))}</a>
     <div class="pd">
       <div class="gallery rv">
-        <div class="main"><img src="${pimg(p)}" alt="${esc(p.name)}"></div>
-        ${p.images.length > 1 ? `<div class="thumbs">${p.images.map((s, i) => `<button class="${i ? '' : 'on'}" data-src="${s}"><img src="${s}" alt=""></button>`).join('')}</div>` : ''}</div>
+        <div class="main ${p.shape ? 'is3d' : ''}">${p.shape ? `<div class="v3d" id="pd3d">${hint3d}</div>` : ''}<img src="${pimg(p)}" alt="${esc(p.name)}"></div>
+        ${p.shape || p.images.length > 1 ? `<div class="thumbs">${p.shape ? '<button class="on t3d" data-mode="3d" aria-label="3D nézet"><b>3D</b></button>' : ''}${p.images.map((s, i) => `<button class="${!p.shape && !i ? 'on' : ''}" data-src="${s}"><img src="${s}" alt=""></button>`).join('')}</div>` : ''}</div>
       <div class="rv">
         <a class="card-brand" href="#/marka/${brandKey(p.brand)}">${esc(p.brand)}</a>
         <h1>${esc(p.name)}</h1>
@@ -560,6 +611,8 @@ function contact() {
     </div></section>`;
 }
 function checkout() {
+  const rendeles = cart.items.some((i) => wsTermek(i.id));   // webshop-termék a kosárban → rendelés (szállítási címmel), nem ajánlatkérés
+  const L_ = (k, d) => (rendeles && ['checkoutEyebrow', 'checkoutTitle', 'submit', 'totalLabel'].includes(k) ? d : L0(k, d));
   const L = cart.lines;
   if (!L.length) return `<section class="page wrap"><div class="empty glass"><p style="font-size:40px;margin:0">${C.labels.emptyIcon}</p><p>Üres a kosarad.</p><a class="btn btn-gold" href="#/termekek">Vásárlás</a></div></section>`;
   const SHIP = C.shipping.methods, PAY = C.shipping.payments;
@@ -615,20 +668,26 @@ function route() {
   const seg = (path || '/').split('/').filter(Boolean);
   const params = new URLSearchParams(qs || '');
   const r = seg[0] || '';
+  if (C.webshop && !KATS.ws && /^(webshop|termek|penztar)$/.test(r)) {   // a webshop-adat még töltődik: megvárjuk (hiba esetén a webshop kikapcsol)
+    app.innerHTML = '<section class="page wrap"><p class="muted">Betöltés…</p></section>';
+    wsBetolt().then(() => { if (!KATS.ws) C.webshop = null; route.last = ''; route(); }); return;
+  }
+  const wsTermekLap = r === 'termek' && KATS.ws && !(KATS.alap || { products: S.products }).products.some((p) => p.slug === seg[1]) && KATS.ws.products.some((p) => p.slug === seg[1]);
+  katAllit(r === 'webshop' || wsTermekLap ? 'ws' : 'alap');
   const view = {
-    '': () => home(), termekek: () => shop(params), termek: () => product(seg[1]), [NR]: () => skinPage(seg[1]),
+    '': () => home(), termekek: () => shop(params), webshop: () => shop(params), termek: () => product(seg[1]), [NR]: () => skinPage(seg[1]),
     markak: () => brandsPage(), marka: () => brandPage(seg[1]), blog: () => seg[1] ? article(seg[1]) : blog(),
     oldal: () => legal(seg[1]), kapcsolat: () => contact(), penztar: () => checkout(),
     ...Object.fromEntries(Object.entries(window.EXTRA_ROUTES || {}).map(([k, f]) => [k, () => f(seg, params)])),   // felépítések saját aloldalai (pl. Recepció: webshop, helyben)
   }[r] || notFound;
   if (route.last === r + '/' + (seg[1] || '') && r === 'termekek') return; // a szűrő maga írja át a címet
   route.last = r + '/' + (seg[1] || '');
-  disposeRings();
+  disposeRings(); disposeViewers();
   if (window.LX_CLEANUP) LX_CLEANUP();
   app.innerHTML = view();
   drawer(false);
   $('#navLinks').classList.remove('open');
-  $$('#navLinks a').forEach(a => a.classList.toggle('on', a.getAttribute('href').slice(2).split('/')[0] === (r === 'termek' ? 'termekek' : r === 'marka' ? 'markak' : r)));
+  $$('#navLinks a').forEach(a => a.classList.toggle('on', a.getAttribute('href').slice(2).split('/')[0] === (r === 'termek' ? (KAT === 'ws' ? 'webshop' : 'termekek') : r === 'marka' ? 'markak' : r)));
   document.body.classList.toggle('deep', r !== '');
   document.title = r ? ($('h1')?.textContent || C.name) + ' · ' + C.name : C.name;
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -757,6 +816,7 @@ async function eloTartalom() {
   // lassú hálózaton a felépítések szkriptjei (layouts*.js, alapok*.js) még töltődhetnek – a kirajzolás megvárja őket
   if (document.readyState === 'loading') await new Promise((r) => addEventListener('DOMContentLoaded', r, { once: true }));
   if (((window.LAYOUT_META || {})[LY()] || {}).light) document.body.classList.add('light');
+  if (C.webshop) { const kell = /^#\/(webshop|termek\/|penztar)/.test(location.hash) || cart.items.some((i) => wsTermek(i.id)); const w = wsBetolt(); if (kell) await w; }
   route();
   addEventListener('scroll', () => $('#nav').classList.toggle('scrolled', scrollY > 40), { passive: true });
 })();

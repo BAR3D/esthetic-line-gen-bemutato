@@ -41,8 +41,8 @@ LAYOUTS.recepcio = function () {
     fontLoad();
     if (TM && TM.dark) document.body.classList.remove('light');   // a sötét luxus téma a saját színeit használja
     if (LG) $$('.brand-mark').forEach((m) => { m.textContent = LG.betu || ''; m.classList.add('rc-lg'); });
-    if (C.webshop) rcWebshop().then((W) => { const L = (W.termekek || []).filter((p) => p.kep && p.keszleten); const pick = (n, k) => L.filter((_, i) => i % 7 === k).slice(0, n);
-      $$('[data-vitrin]').forEach((v) => { v.innerHTML = pick(9, v.dataset.vitrin === 'bal' ? 0 : 3).map((p) => `<img src="${p.kep}" alt="" loading="lazy" decoding="async">`).join(''); }); }).catch(() => {});
+    if (C.webshop && typeof wsBetolt === 'function') wsBetolt().then((W) => { if (!W) return; const L = (W.products || []).filter((p) => p.images && p.images[0] && p.inStock); const pick = (n, k) => L.filter((_, i) => i % 7 === k).slice(0, n);
+      $$('[data-vitrin]').forEach((v) => { v.innerHTML = pick(6, v.dataset.vitrin === 'bal' ? 0 : 3).map((p) => `<img src="${p.images[0]}" alt="" loading="lazy" decoding="async">`).join(''); }); });
     const stage = $('.rc-stage'), ring = $('.rc-ring'), doors = $('.rc-doors'), panels = $$('.rc-room'), chips = $$('.rc-chip'), room = $('.rc-open'); if (!stage) return;
     // érkezés: az ajtó szétnyílik
     let paused = false; const busy = () => paused || document.hidden || room.classList.contains('on') || !F3.visible(stage);   // ilyenkor semmi nem rajzol
@@ -184,7 +184,7 @@ LAYOUTS.recepcio = function () {
       fix(); new MutationObserver(fix).observe(document.body, { attributes: true, attributeFilter: ['class'] }); }   // a sötét luxus téma MINDEN aloldalon (közvetlen megnyitásnál is) – soha ne villanjon be a világos
     const nl = document.getElementById('navLinks'); if (nl && !nl.querySelector('a.rc-home')) { const a = document.createElement('a'); a.href = '#/'; a.className = 'rc-home'; a.textContent = 'Főoldal'; nl.prepend(a); }
     if (C.webshop && nl && !nl.querySelector('a.rc-ws')) { const w = document.createElement('a'); w.href = '#/webshop'; w.className = 'rc-ws'; w.textContent = 'Webshop'; const ar = nl.querySelector('a[href="#/termekek"]'); if (ar) ar.after(w); else nl.append(w); }
-    $$('#navLinks a.rc-ws').forEach((a) => a.classList.toggle('on', /^#\/(webshop|helyben)/.test(location.hash)));
+    $$('#navLinks a.rc-ws').forEach((a) => a.classList.toggle('on', /^#\/(webshop|helyben)/.test(location.hash) || (typeof KAT !== 'undefined' && KAT === 'ws' && /^#\/termek\//.test(location.hash))));
     $$('#navLinks a.rc-home').forEach((a) => a.classList.toggle('on', !location.hash || location.hash === '#/' || location.hash === '#'));
     if (!(C.recepcio && C.recepcio.teljesMenu)) $$('#navLinks a').forEach((a) => { const h = (a.getAttribute('href') || '').slice(2); if (h === 'markak' || h === (typeof NR !== 'undefined' ? NR : '')) a.remove(); }); };
   let n = 0; const iv = setInterval(() => { go(); if (++n > 40) clearInterval(iv); }, 150); window.addEventListener('hashchange', () => { setTimeout(go, 0); setTimeout(go, 400); });   // a config később töltődik be – addig újrapróbálja
@@ -213,43 +213,10 @@ function rcAkcio() {
   const kb = el.querySelector('.rc-akcio-kod'); if (kb) kb.addEventListener('click', () => { try { navigator.clipboard.writeText(A.kod); kb.querySelector('span').textContent = 'Másolva ✓'; } catch { /* a kód így is látszik */ } });
 }
 
-// ---------- WEBSHOP és HELYBEN KAPHATÓ aloldalak (config.webshop → data/webshop.json, a felépítő másolja be egy másik projektből) ----------
-let RC_WS = null;
-function rcWebshop() { return RC_WS || (RC_WS = fetch('data/webshop.json?v=' + (typeof C !== 'undefined' ? C.version : '')).then((r) => r.json())); }
-const rcFt = (n) => (n == null ? '' : Number(n).toLocaleString('hu-HU') + ' Ft');
+// ---------- HELYBEN KAPHATÓ aloldal (a webshop maga az app.js boltja: körhinta, szűrők, termékoldal, közös kosár – config.webshop) ----------
 window.EXTRA_ROUTES = Object.assign(window.EXTRA_ROUTES || {}, {
-  webshop: (seg, params) => {
-    const W0 = C.webshop || {};
-    setTimeout(() => rcWebshop().then((W) => rcWsRajzol(W)).catch(() => { const el = document.getElementById('wsLista'); if (el) el.innerHTML = '<p class="ws-ures">A termékek most nem töltődtek be. Próbáld újra kicsit később.</p>'; }), 0);
-    return `<section class="page wrap ws-oldal"><div class="page-head rv"><span class="sec-num">Webshop · ${esc(W0.nev || '')}</span><h1>${esc(W0.nev || 'Webshop')}</h1>
-      <p>A szalonban is használt professzionális kozmetikumok otthonra. Böngészd végig a teljes kínálatot – a rendelés a ${esc(W0.nev || 'webshop')} oldalán történik.</p></div>
-      <div class="ws-szuro" id="wsSzuro"></div><div class="ws-racs" id="wsLista"><p class="ws-ures">Termékek betöltése…</p></div>
-      <a class="ws-helyben-link" href="#/helyben"><b>Helyben kapható termékek</b><span>Amit a forgalmazó csak a szalonban enged eladni – hamarosan itt is böngészheted. →</span></a></section>`;
-  },
   helyben: () => `<section class="page wrap ws-oldal"><div class="page-head rv"><span class="sec-num">Csak a szalonban</span><h1>Helyben kapható termékek</h1>
       <p>Vannak termékek, amelyeket a forgalmazó csak személyesen, a szalonban enged értékesíteni. Hamarosan itt is végignézheted őket, hogy otthon kényelmesen kiválaszd, mit kérsz a következő kezelésed után.</p></div>
       <div class="ws-hamarosan"><span class="ws-badge">Hamarosan</span><p>Addig kérdezz rá bátran a szalonban, vagy nézd meg a webshop kínálatát.</p>
       <div class="ws-gombok">${C.webshop ? '<a class="btn btn-gold" href="#/webshop">A webshop kínálata →</a>' : ''}${C.contact && C.contact.phone ? `<a class="btn btn-ghost" href="${telHref(C.contact.phone)}">${esc(C.contact.phone)}</a>` : ''}</div></div></section>`,
 });
-function rcWsRajzol(W) {
-  const el = document.getElementById('wsLista'), sz = document.getElementById('wsSzuro'); if (!el || !sz) return;
-  const T = W.termekek || [], markak = [...new Set(T.map((p) => p.marka).filter(Boolean))];
-  const db = {}; T.forEach((p) => p.cats.forEach((c) => (db[c] = (db[c] || 0) + 1))); const cats = Object.keys(db).sort((a, b) => db[b] - db[a]).slice(0, 14);
-  const A = { q: '', marka: '', cat: '', keszlet: false };
-  sz.innerHTML = `<input type="search" id="wsQ" placeholder="Keresés a termékek között…" aria-label="Keresés">
-    <div class="ws-chipek" role="group" aria-label="Márka"><button type="button" class="ws-chip on" data-m="">Minden márka</button>${markak.map((m) => `<button type="button" class="ws-chip" data-m="${esc(m)}">${esc(m)}</button>`).join('')}</div>
-    <div class="ws-sor"><select id="wsCat" aria-label="Kategória"><option value="">Minden kategória</option>${cats.map((c) => `<option>${esc(c)}</option>`).join('')}</select>
-    <label class="ws-kapcs"><input type="checkbox" id="wsK"> Csak készleten</label><span class="ws-db" id="wsDb"></span></div>`;
-  const rajz = () => {
-    const q = A.q.toLowerCase(), L = T.filter((p) => (!q || (p.nev + ' ' + p.marka + ' ' + p.cats.join(' ')).toLowerCase().includes(q)) && (!A.marka || p.marka === A.marka) && (!A.cat || p.cats.includes(A.cat)) && (!A.keszlet || p.keszleten));
-    document.getElementById('wsDb').textContent = L.length + ' termék';
-    el.innerHTML = L.length ? L.map((p) => `<article class="ws-kartya${p.keszleten ? '' : ' elfogyott'}"><a class="ws-kep" href="${esc(p.url)}" target="_blank" rel="noopener">${p.kep ? `<img src="${p.kep}" alt="${esc(p.nev)}" loading="lazy" decoding="async">` : ''}${p.akcios ? '<span class="ws-cimke">Akció</span>' : ''}${p.keszleten ? '' : '<span class="ws-cimke szurke">Elfogyott</span>'}</a>
-      <div class="ws-b"><small>${esc(p.marka)}</small><h3>${esc(p.nev)}</h3><div class="ws-ar">${p.akcios && p.eredeti > p.ar ? `<s>${rcFt(p.eredeti)}</s>` : ''}<b>${rcFt(p.ar)}</b></div>
-      <a class="btn btn-ghost ws-tovabb" href="${esc(p.url)}" target="_blank" rel="noopener">Megnézem a webshopban ↗</a></div></article>`).join('') : '<p class="ws-ures">Nincs a szűrésnek megfelelő termék.</p>';
-  };
-  document.getElementById('wsQ').oninput = (e) => { A.q = e.target.value; rajz(); };
-  document.getElementById('wsCat').onchange = (e) => { A.cat = e.target.value; rajz(); };
-  document.getElementById('wsK').onchange = (e) => { A.keszlet = e.target.checked; rajz(); };
-  sz.querySelectorAll('[data-m]').forEach((b) => (b.onclick = () => { A.marka = b.dataset.m; sz.querySelectorAll('[data-m]').forEach((x) => x.classList.toggle('on', x === b)); rajz(); }));
-  rajz();
-}

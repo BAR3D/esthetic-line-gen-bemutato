@@ -402,3 +402,32 @@ main { min-height: 100vh; }
 /* adatlap: vissza gomb (az árlistára / az előző oldalra) */
 .pd-back { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 18px; padding: 7px 14px; border-radius: 99px; font-size: 13px; color: var(--ink-2); border: 1px solid var(--line-2); transition: .25s; }
 .pd-back:hover { color: var(--gold); border-color: var(--gold); }
+
+/* ===================== körbeforgatható 3D termék (viewer3d.mjs) – a krémvilágos bemutatóból ===================== */
+.v3d { position: relative; width: 100%; height: 100%; touch-action: pan-y; cursor: grab; }
+.v3d.grabbing { cursor: grabbing; }
+.v3d-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
+.v3d-hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 2; padding: 6px 14px; border-radius: 999px; background: rgba(42,26,33,.72); color: #fff7ee; font-size: 13px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .4s; }
+.v3d.ready .v3d-hint { opacity: 1; } .v3d.touched .v3d-hint { opacity: 0; }
+.v3d-load { position: absolute; inset: 0; display: grid; place-items: center; color: #8a6a62; font-size: 14px; pointer-events: none; transition: opacity .4s; }
+.v3d.ready .v3d-load { opacity: 0; }
+.gallery .main .v3d { position: absolute; inset: 0; display: none; }
+.gallery .main.is3d .v3d { display: block; }
+.gallery .main.is3d > img { visibility: hidden; }
+.gallery .main .v3d.no3d { display: none; }
+.gallery .main .v3d.no3d + img { visibility: visible; }
+.thumbs .t3d { display: grid; place-items: center; color: #2a1717; background: linear-gradient(135deg, var(--gold-2), var(--gold)); }
+.thumbs .t3d b { font-family: var(--serif); font-size: 20px; }
+.showcase { display: grid; grid-template-columns: 1.1fr 1fr; margin-bottom: 22px; overflow: hidden; min-height: 460px; border-radius: var(--r); }
+.showcase .v3d { min-height: 460px; background: radial-gradient(circle at 50% 45%, #fff 0%, #f3e8e1 60%, #e9d8cf 100%); }
+.sc-info { padding: 36px 36px 30px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.sc-info h3 { font-size: clamp(26px, 3vw, 36px); line-height: 1.12; }
+.sc-desc { font-size: 15px; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.sc-desc p { margin: 0 0 6px; }
+.sc-buy { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.sc-buy .price { font-size: 30px; margin-right: 6px; }
+.sc-pick { display: flex; gap: 8px; margin-top: auto; padding-top: 14px; flex-wrap: wrap; }
+.sc-pick button { width: 58px; height: 58px; border-radius: 14px; background: #fbf4ef; padding: 5px; border: 2px solid transparent; cursor: pointer; transition: transform .2s; }
+.sc-pick button:hover { transform: translateY(-2px); } .sc-pick button.on { border-color: var(--gold); }
+.sc-pick img { width: 100%; height: 100%; object-fit: contain; }
+@media (max-width: 900px) { .showcase { grid-template-columns: 1fr; } .showcase .v3d { min-height: 380px; } .sc-info { padding: 24px; } }
