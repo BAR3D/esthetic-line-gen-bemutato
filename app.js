@@ -38,6 +38,7 @@ function katAllit(k) {
   if (!KATS.alap) KATS.alap = { products: S.products, types: TYPES, brands: BRANDS, skins: SKINS, labels: C.labels };
   const T = KATS[k] || KATS.alap; KAT = KATS[k] ? k : 'alap';
   S.products = T.products; TYPES = T.types; BRANDS = T.brands; SKINS = T.skins; C.labels = T.labels;
+  document.body.classList.toggle('kat-ws', KAT === 'ws');   // a webshop-termékfotók egészben látszanak (nem kivágva)
 }
 const minden = () => [...(KATS.alap ? KATS.alap.products : S.products), ...(KATS.ws ? KATS.ws.products : [])];
 const L_ = (k, d) => (C.labels && C.labels[k]) || d;
