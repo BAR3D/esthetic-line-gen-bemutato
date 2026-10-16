@@ -363,3 +363,78 @@ body.rc-t-pezsgo, .rc-pezsgo {
 .rc-akcio-kod span { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--rcA2, #e2c27a); } .rc-akcio-kod b { font-size: 17px; letter-spacing: .12em; color: var(--rcA0, #fff3d0); }
 .rc-akcio-gombok { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .rc-akcio-zar { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(var(--rcA2r, 226,194,122),.5); background: rgba(var(--rcD0r, 10,9,7),.7); color: var(--rcA1, #f7e3a8); font-size: 20px; line-height: 1; cursor: pointer; }
+
+/* ===================== VITRINEK a recepció padlóján: bal = webshop, jobb = helyben kapható (hamarosan) ===================== */
+.rc-vitrin { position: absolute; z-index: 5; bottom: 5vh; width: clamp(150px, 13.5vw, 230px); display: grid; gap: 8px; justify-items: center; text-decoration: none; color: inherit; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+.rc-vitrin.bal { left: 2.6vw; } .rc-vitrin.jobb { right: 2.6vw; }
+.rc-vitrin:hover, .rc-vitrin:focus-visible { transform: translateY(-6px); }
+.rc-v-uveg { position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 14px 14px 6px 6px; overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03) 40%, rgba(var(--rcD0r, 10,9,7),.55));
+  border: 1px solid rgba(var(--rcA2r, 226,194,122),.65); box-shadow: inset 0 0 0 4px rgba(var(--rcD0r, 10,9,7),.55), inset 0 0 40px rgba(var(--rcA1r, 247,227,168),.12), 0 24px 50px rgba(0,0,0,.6), 0 0 30px rgba(var(--rcA2r, 226,194,122),.18); }
+.rc-v-uveg::before { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.16) 42%, transparent 50%), linear-gradient(180deg, rgba(var(--rcA1r, 255,236,180),.35), transparent 14%); }
+.rc-v-uveg > i { position: absolute; z-index: 2; left: 6%; right: 6%; height: 3px; border-radius: 2px; background: linear-gradient(90deg, rgba(var(--rcA2r, 226,194,122),.35), rgba(var(--rcA1r, 247,227,168),.95), rgba(var(--rcA2r, 226,194,122),.35)); box-shadow: 0 4px 10px rgba(0,0,0,.5), 0 0 12px rgba(var(--rcA1r, 247,227,168),.4); }
+.rc-v-uveg > i:nth-of-type(1) { top: 33%; } .rc-v-uveg > i:nth-of-type(2) { top: 64%; } .rc-v-uveg > i:nth-of-type(3) { top: 95%; }
+.rc-v-termek { position: absolute; z-index: 1; inset: 3% 8% 5%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 4% 6%; align-items: end; }
+.rc-v-termek img { width: 100%; height: 86%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 4px 6px rgba(0,0,0,.6)); }
+.rc-vitrin.jobb .rc-v-termek img { filter: brightness(.45) saturate(.6) blur(.6px) drop-shadow(0 4px 6px rgba(0,0,0,.6)); }
+.rc-v-szalag { position: absolute; z-index: 4; left: -30%; right: -30%; top: 44%; transform: rotate(-18deg); text-align: center; padding: 6px 0; font-size: 12px; font-weight: 800; letter-spacing: .3em; text-transform: uppercase; color: var(--rcINK, #1a1308); background: linear-gradient(90deg, var(--rcA3, #c9a24f), var(--rcA1, #f7e3a8), var(--rcA3, #c9a24f)); box-shadow: 0 6px 18px rgba(0,0,0,.5); }
+.rc-v-tabla { display: grid; justify-items: center; gap: 1px; padding: 8px 14px 9px; min-width: 88%; border-radius: 12px; text-align: center; background: linear-gradient(160deg, rgba(var(--rcD1r, 30,26,18),.92), rgba(var(--rcD0r, 8,8,8),.95)); border: 1px solid rgba(var(--rcA2r, 226,194,122),.6); box-shadow: 0 10px 26px rgba(0,0,0,.6); }
+.rc-v-tabla small { font-size: 9.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--rcA2, #e2c27a); }
+.rc-v-tabla b { font-family: var(--serif); font-size: clamp(17px, 1.4vw, 22px); font-weight: 600; color: var(--rcA0, #fff3d0); line-height: 1.15; }
+.rc-v-tabla em { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--rcA1, #f7e3a8); }
+.rc-vitrin.jobb .rc-v-tabla em { color: var(--rcT2, #d9cdb6); }
+.rc-ws-gomb { display: none !important; }
+@media (max-width: 1100px) { .rc-vitrin { display: none; } .rc-ws-gomb { display: inline-flex !important; } }
+
+/* ===================== WEBSHOP és HELYBEN KAPHATÓ aloldal ===================== */
+.ws-szuro { display: grid; gap: 12px; margin: 6px 0 20px; }
+.ws-szuro input[type=search], .ws-szuro select { min-height: 46px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--paper, transparent); color: var(--ink); font: inherit; }
+.ws-chipek { display: flex; flex-wrap: wrap; gap: 8px; }
+.ws-chip { padding: 8px 14px; border-radius: 99px; border: 1px solid var(--line-2); background: transparent; color: var(--ink-2); cursor: pointer; font: inherit; font-size: 14px; }
+.ws-chip.on { background: var(--gold); border-color: var(--gold); color: var(--rcINK, #1a1308); font-weight: 700; }
+.ws-sor { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; } .ws-sor select { flex: 0 1 260px; }
+.ws-kapcs { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14px; cursor: pointer; } .ws-kapcs input { width: 18px; height: 18px; accent-color: var(--gold); }
+.ws-db { margin-left: auto; color: var(--ink-2); font-size: 14px; font-variant-numeric: tabular-nums; }
+.ws-racs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 16px; }
+.ws-kartya { display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: var(--paper, rgba(255,255,255,.03)); transition: transform .3s, border-color .3s; }
+.ws-kartya:hover { transform: translateY(-4px); border-color: var(--gold); }
+.ws-kep { position: relative; display: grid; place-items: center; aspect-ratio: 1; background: #fff; }
+.ws-kep img { width: 86%; height: 86%; object-fit: contain; }
+.ws-kartya.elfogyott .ws-kep img { opacity: .55; }
+.ws-cimke { position: absolute; top: 10px; left: 10px; padding: 3px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 800; background: var(--gold); color: #1a1308; } .ws-cimke.szurke { background: #6b6560; color: #fff; left: auto; right: 10px; }
+.ws-b { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; flex: 1; }
+.ws-b small { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+.ws-b h3 { font-size: 15px; line-height: 1.35; font-weight: 600; margin: 0; }
+.ws-ar { margin-top: auto; padding-top: 6px; display: flex; gap: 8px; align-items: baseline; font-variant-numeric: tabular-nums; } .ws-ar b { font-size: 17px; } .ws-ar s { color: var(--ink-2); font-size: 13px; }
+.ws-tovabb { align-self: flex-start; margin-top: 6px; padding: 8px 14px; font-size: 13px; }
+.ws-ures { grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--ink-2); }
+.ws-helyben-link { display: grid; gap: 4px; margin-top: 28px; padding: 18px 20px; border-radius: 18px; border: 1px dashed var(--gold); text-decoration: none; color: inherit; }
+.ws-helyben-link b { font-size: 18px; } .ws-helyben-link span { color: var(--ink-2); }
+.ws-hamarosan { display: grid; gap: 14px; justify-items: start; margin-top: 10px; padding: 26px 24px; border-radius: 20px; border: 1px solid var(--line-2); max-width: 680px; }
+.ws-badge { padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; background: var(--gold); color: #1a1308; }
+.ws-gombok { display: flex; flex-wrap: wrap; gap: 10px; }
+body.rc-lux .ws-kep { background: #f6f2ea; }
+/* vitrin: alacsonyabb, két polc – ne érjen fel a termek névtábláihoz */
+.rc-vitrin { width: clamp(140px, 11vw, 196px); bottom: 3.2vh; gap: 6px; }
+.rc-v-uveg { aspect-ratio: 1 / 1; }
+.rc-v-uveg > i:nth-of-type(1) { top: 47%; } .rc-v-uveg > i:nth-of-type(2) { top: 93%; } .rc-v-uveg > i:nth-of-type(3) { display: none; }
+.rc-v-termek { inset: 5% 8% 8%; grid-template-rows: repeat(2, 1fr); gap: 8% 6%; }
+.rc-v-termek img:nth-child(n+7) { display: none; }
+.rc-v-szalag { top: 40%; }
+/* belülről megvilágított vitrin: meleg világos belső – a termékfotók fehér háttere beleolvad (multiply) */
+.rc-v-uveg { background: radial-gradient(ellipse 90% 60% at 50% 0%, #fffaf0, #efe4d2 55%, #d9c7a8); }
+.rc-v-termek img { mix-blend-mode: multiply; filter: none; }
+.rc-vitrin.jobb .rc-v-uveg::after { content: ''; position: absolute; inset: 0; z-index: 2; background: rgba(var(--rcD0r, 10,9,7),.55); }
+.rc-vitrin.jobb .rc-v-termek img { filter: blur(.5px) saturate(.6); }
+.rc-v-termek { z-index: auto; }   /* saját réteg nélkül, hogy a multiply a vitrin hátterével keveredjen */
+/* webshop a recepció stílusaiban: a kártyák és mezők a téma saját színeiből (sötét témán sötét lap, olvasható szöveg) */
+body.rc-lux .ws-kartya { background: linear-gradient(160deg, rgba(var(--rcD1r, 30,26,18),.92), rgba(var(--rcD0r, 10,9,7),.94)); border-color: rgba(var(--rcA2r, 226,194,122),.28); color: var(--rcT1, #f4ecdc); }
+body.rc-lux .ws-kartya:hover { border-color: rgba(var(--rcA2r, 226,194,122),.75); }
+body.rc-lux .ws-b h3 { color: var(--rcT1, #f4ecdc); } body.rc-lux .ws-b small { color: var(--rcA2, #e2c27a); }
+body.rc-lux .ws-ar b { color: var(--rcA0, #fff3d0); } body.rc-lux .ws-ar s, body.rc-lux .ws-db, body.rc-lux .ws-kapcs { color: var(--rcT2, #d9cdb6); }
+body.rc-lux .ws-szuro input[type=search], body.rc-lux .ws-szuro select { background: rgba(var(--rcD0r, 10,9,7),.75); color: var(--rcT1, #f4ecdc); border-color: rgba(var(--rcA2r, 226,194,122),.35); }
+body.rc-lux .ws-chip { color: var(--rcT1, #f4ecdc); border-color: rgba(var(--rcA2r, 226,194,122),.35); background: rgba(var(--rcD0r, 10,9,7),.5); }
+body.rc-lux .ws-chip.on { background: linear-gradient(135deg, var(--rcA1, #f7e3a8), var(--rcA3, #c9a24f)); color: var(--rcINK, #1a1308); border-color: transparent; }
+body.rc-lux .ws-tovabb { color: var(--rcA1, #f7e3a8); border-color: rgba(var(--rcA2r, 226,194,122),.55); }
+body.rc-lux .ws-helyben-link, body.rc-lux .ws-hamarosan { background: rgba(var(--rcD0r, 10,9,7),.6); border-color: rgba(var(--rcA2r, 226,194,122),.5); color: var(--rcT1, #f4ecdc); }
+body.rc-lux .ws-helyben-link span, body.rc-lux .ws-hamarosan p { color: var(--rcT2, #d9cdb6); }

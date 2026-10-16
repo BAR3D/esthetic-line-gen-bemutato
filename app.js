@@ -619,6 +619,7 @@ function route() {
     '': () => home(), termekek: () => shop(params), termek: () => product(seg[1]), [NR]: () => skinPage(seg[1]),
     markak: () => brandsPage(), marka: () => brandPage(seg[1]), blog: () => seg[1] ? article(seg[1]) : blog(),
     oldal: () => legal(seg[1]), kapcsolat: () => contact(), penztar: () => checkout(),
+    ...Object.fromEntries(Object.entries(window.EXTRA_ROUTES || {}).map(([k, f]) => [k, () => f(seg, params)])),   // felépítések saját aloldalai (pl. Recepció: webshop, helyben)
   }[r] || notFound;
   if (route.last === r + '/' + (seg[1] || '') && r === 'termekek') return; // a szűrő maga írja át a címet
   route.last = r + '/' + (seg[1] || '');
