@@ -7,6 +7,7 @@ window.LAYOUT_META5 = {
   recepcio: { name: 'Recepció', desc: 'Megérkezel a szalon recepciójára: körbenézel a 3D térben, a termek közül választasz, belépve kezelések és árak.', light: true, shopView: 'racs' },
   'recepcio-arany': { name: 'Recepció – Arany', desc: 'Mentett stílus (Esthetic Line, 2026-10-14): sötét luxus, fekete márvány, arany fények és aranypor, logó-érmes ajtó, legördülő recepciós pult.', light: false, shopView: 'racs' },
   'recepcio-pezsgo': { name: 'Recepció – Pezsgő', desc: 'Világos, napfényes szalon: elefántcsont, pezsgő és rozéarany, levegős fények – ugyanaz az ajtós, 3D-termes érkezés.', light: true, shopView: 'racs' },
+  'recepcio-oliva': { name: 'Recepció – Olíva', desc: 'Természetes, hétköznapi szalon: bézs falak, olívazöld és finom arany, nappali fény, valódi emberek – nem luxus, hanem barátságos.', light: true, shopView: 'racs' },
   'recepcio-ejkek': { name: 'Recepció – Éjkék', desc: 'Futurisztikus klinika: éjkék üveg, türkiz és ibolya neonfény, hideg fénypor – modern esztétika és technológia.', light: false, shopView: 'racs' },
 };
 // a Recepció stílusai – mind ugyanaz a felépítés (ajtó, 3D termek, csapat, pult), csak a színvilág és a fények mások
@@ -15,6 +16,8 @@ window.RC_TEMAK = {
             por: { mag: '255,250,230', k1: '255,236,170', k2: '240,196,95', k3: '226,170,70', b1: '255,214,140', b2: '255,200,110', csill: '255,250,235', csill0: '255,240,200' } },
   pezsgo: { name: 'Recepció – Pezsgő', desc: 'Világos, napfényes szalon: elefántcsont, pezsgő és rozéarany, levegős, nyugodt fények.', dark: false, blend: 'source-over',
             por: { mag: '255,252,246', k1: '236,200,176', k2: '214,160,130', k3: '196,140,112', b1: '240,214,196', b2: '226,190,168', csill: '255,255,255', csill0: '245,225,210' } },
+  oliva:  { name: 'Recepció – Olíva', desc: 'Természetes, barátságos szalon: bézs, olívazöld és finom arany, nappali fény.', dark: false, blend: 'source-over',
+            por: { mag: '255,253,245', k1: '214,196,140', k2: '170,170,110', k3: '140,150,90', b1: '226,210,160', b2: '190,186,130', csill: '255,255,250', csill0: '236,226,190' } },
   ejkek:  { name: 'Recepció – Éjkék', desc: 'Futurisztikus klinika: éjkék üveg, türkiz és ibolya neonfény, hideg fénypor – modern esztétika, technológia.', dark: true, blend: 'lighter',
             por: { mag: '235,252,255', k1: '160,240,255', k2: '80,210,235', k3: '120,110,255', b1: '110,200,255', b2: '150,120,255', csill: '240,252,255', csill0: '170,235,255' } },
 };
@@ -158,8 +161,8 @@ LAYOUTS.recepcio = function () {
       <div class="rc-desk"><span class="rc-avatar${LG ? ' rc-lg' : ''}" aria-hidden="true">${LG ? esc(LG.betu || '') : ''}</span><div><small>RECEPCIÓ · ${esc(C.name)}</small><p>${esc(C.recepcio && C.recepcio.koszones || 'Szép napot! Örülünk, hogy itt vagy. Merre kísérhetünk?')}</p>
         <div class="rc-deskcta"><div class="rc-pick"><button class="rc-pick-b" type="button" aria-haspopup="listbox" aria-expanded="false"><small>Terem</small><span>${esc(rooms[0] ? rooms[0].name : '')}</span><i aria-hidden="true">▾</i></button>
           <ul class="rc-pick-l" role="listbox">${rooms.map((s, i) => `<li role="option" data-i="${i}"><b>${String(i + 1).padStart(2, '0')}</b>${esc(s.name)}</li>`).join('')}</ul></div>
-          <button class="btn btn-gold rc-go" type="button" data-open="0">Belépek →</button>${C.webshop ? '<a class="btn btn-ghost rc-ws-gomb" href="#/webshop">Webshop</a>' : ''}${tel ? `<a class="btn btn-ghost" href="${telHref(tel)}">${esc(tel)}</a>` : ''}</div></div></div>
-      ${C.webshop ? `<a class="rc-vitrin bal" href="#/webshop" aria-label="${esc(C.webshop.nev || 'Webshop')} webshop"><span class="rc-v-uveg"><i></i><i></i><i></i><span class="rc-v-termek" data-vitrin="bal"></span></span>
+          <button class="btn btn-gold rc-go" type="button" data-open="0">Belépek →</button>${C.webshop ? `<a class="btn btn-ghost rc-ws-gomb" href="${esc(C.webshop.kulso || '#/webshop')}">Webshop</a>` : ''}${tel ? `<a class="btn btn-ghost" href="${telHref(tel)}">${esc(tel)}</a>` : ''}</div></div></div>
+      ${C.webshop ? `<a class="rc-vitrin bal" href="${esc(C.webshop.kulso || '#/webshop')}" aria-label="${esc(C.webshop.nev || 'Webshop')} webshop"><span class="rc-v-uveg"><i></i><i></i><i></i><span class="rc-v-termek" data-vitrin="bal"></span></span>
         <span class="rc-v-tabla"><small>${esc(C.webshop.nev || 'Webshop')}</small><b>Webshop</b><em>Belépek →</em></span></a>
       <a class="rc-vitrin jobb" href="#/helyben" aria-label="Helyben kapható termékek – hamarosan"><span class="rc-v-uveg"><i></i><i></i><i></i><span class="rc-v-termek" data-vitrin="jobb"></span><span class="rc-v-szalag">Hamarosan</span></span>
         <span class="rc-v-tabla"><small>Csak a szalonban</small><b>Helyben kapható</b><em>Hamarosan</em></span></a>` : ''}
@@ -186,7 +189,7 @@ LAYOUTS.recepcio = function () {
       if (C.recepcio.hatter) document.body.style.setProperty('--rc-bg', `url(${img(C.recepcio.hatter)})`);   // aloldalak háttere: a recepció fotója, sötétítve
       fix(); new MutationObserver(fix).observe(document.body, { attributes: true, attributeFilter: ['class'] }); }   // a sötét luxus téma MINDEN aloldalon (közvetlen megnyitásnál is) – soha ne villanjon be a világos
     const nl = document.getElementById('navLinks'); if (nl && !nl.querySelector('a.rc-home')) { const a = document.createElement('a'); a.href = '#/'; a.className = 'rc-home'; a.textContent = 'Főoldal'; nl.prepend(a); }
-    if (C.webshop && nl && !nl.querySelector('a.rc-ws')) { const w = document.createElement('a'); w.href = '#/webshop'; w.className = 'rc-ws'; w.textContent = 'Webshop'; const ar = nl.querySelector('a[href="#/termekek"]'); if (ar) ar.after(w); else nl.append(w); }
+    if (C.webshop && nl && !nl.querySelector('a.rc-ws')) { const w = document.createElement('a'); w.href = C.webshop.kulso || '#/webshop'; w.className = 'rc-ws' + (C.webshop.kulso ? ' nav-kulso' : ''); w.textContent = 'Webshop'; const ar = nl.querySelector('a[href="#/termekek"]'); if (ar) ar.after(w); else nl.append(w); }
     $$('#navLinks a.rc-ws').forEach((a) => a.classList.toggle('on', /^#\/(webshop|helyben)/.test(location.hash) || (typeof KAT !== 'undefined' && KAT === 'ws' && /^#\/termek\//.test(location.hash))));
     $$('#navLinks a.rc-home').forEach((a) => a.classList.toggle('on', !location.hash || location.hash === '#/' || location.hash === '#'));
     if (!(C.recepcio && C.recepcio.teljesMenu)) $$('#navLinks a').forEach((a) => { const h = (a.getAttribute('href') || '').slice(2); if (h === 'markak' || h === (typeof NR !== 'undefined' ? NR : '')) a.remove(); }); };
@@ -236,21 +239,22 @@ window.EXTRA_ROUTES = Object.assign(window.EXTRA_ROUTES || {}, {
     const SZ = C.blogSzobak || {}, kulcsok = Object.keys(SZ);
     if (!kulcsok.length) return seg[1] ? article(seg[1]) : blog();
     if (seg[1] && !SZ[seg[1]]) return article(seg[1]);
-    const db = (k) => S.posts.filter((x) => x.forras === k);
+    const db = (k) => S.posts.filter((x) => x.forras === k), hr = (k) => SZ[k].kulso || '#/blog/' + k;
+    const dbsz = (k) => (SZ[k].kulso ? SZ[k].db || 0 : db(k).length), kp = (k) => (SZ[k].kulso ? SZ[k].kep : (db(k)[0] || {}).image);
     if (!seg[1]) {   // a két ajtó
       setTimeout(() => $$('.bl-ajto').forEach((a) => a.addEventListener('click', (e) => {
         e.preventDefault(); if (a.classList.contains('nyit')) return; a.classList.add('nyit');
-        setTimeout(() => { location.hash = a.getAttribute('href'); }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1050); })));
+        setTimeout(() => { const h = a.getAttribute('href'); if (/^https?:/.test(h)) location.href = h; else location.hash = h; }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1050); })));
       return `<section class="page wrap bl-bejarat"><div class="page-head rv"><span class="sec-num">Blog</span><h1>${esc(C.labels.blogTitle || 'Blog')}</h1>
         <p>Két szoba, két téma. Lépj be, ahová kedved tartja.</p></div>
-        <div class="bl-ajtok">${kulcsok.map((k) => { const L = db(k), u = L[0]; return `<a class="bl-ajto" href="#/blog/${k}" aria-label="${esc(SZ[k].nev)} – ${L.length} cikk">
-          <span class="bl-keret"><span class="bl-mogotte" style="background-image:url(${u && u.image ? u.image : ''})"></span><span class="bl-feny"></span>
+        <div class="bl-ajtok">${kulcsok.map((k) => `<a class="bl-ajto" href="${esc(hr(k))}" aria-label="${esc(SZ[k].nev)} – ${dbsz(k)} cikk">
+          <span class="bl-keret"><span class="bl-mogotte" style="background-image:url(${kp(k) || ''})"></span><span class="bl-feny"></span>
             <span class="bl-szarny bal"><i></i></span><span class="bl-szarny jobb"><i></i></span></span>
-          <span class="bl-tabla"><small>${esc(SZ[k].alcim || '')}</small><b>${esc(SZ[k].nev)}</b><em>${L.length} cikk · Belépek →</em></span>
-          <span class="bl-leiras">${esc(SZ[k].leiras || '')}</span></a>`; }).join('')}</div></section>`;
+          <span class="bl-tabla"><small>${esc(SZ[k].alcim || '')}</small><b>${esc(SZ[k].nev)}</b><em>${dbsz(k)} cikk · ${SZ[k].kulso ? 'Átlépek →' : 'Belépek →'}</em></span>
+          <span class="bl-leiras">${esc(SZ[k].leiras || '')}</span></a>`).join('')}</div></section>`;
     }
     const k = seg[1], L = db(k);   // egy „szoba”: a blog cikkei, fent váltófül
-    return `<section class="page wrap bl-szoba"><div class="bl-ful" role="tablist" aria-label="Blogok">${kulcsok.map((x) => `<a role="tab" href="#/blog/${x}" class="${x === k ? 'on' : ''}" aria-selected="${x === k}">${esc(SZ[x].nev)} <span>${db(x).length}</span></a>`).join('')}</div>
+    return `<section class="page wrap bl-szoba"><div class="bl-ful" role="tablist" aria-label="Blogok">${kulcsok.map((x) => `<a role="tab" href="${esc(hr(x))}" class="${x === k ? 'on' : ''}" aria-selected="${x === k}">${esc(SZ[x].nev)} <span>${dbsz(x)}</span></a>`).join('')}</div>
       <div class="page-head rv"><span class="sec-num">${esc(SZ[k].alcim || 'Blog')}</span><h1>${esc(SZ[k].nev)}</h1><p>${esc(SZ[k].leiras || '')}</p></div>
       <div class="posts">${L.map(postCard).join('') || '<p class="muted">Még nincs cikk.</p>'}</div>
       <p style="margin-top:26px"><a class="link-more" href="#/blog">← Vissza a két ajtóhoz</a></p></section>`;

@@ -369,7 +369,7 @@ function home() {
 
   ${BRANDS.length ? `<section class="sec wrap">
     ${head(num(), L.linesTitle, L.linesSub, '<a class="link-more" href="#/markak">Mind →</a>')}
-    <div class="brands">${BRANDS.map(b => { const ps = P.filter(p => p.brand === b.name); return `
+    <div class="brands">${BRANDS.map(b => { const ps = P.filter(p => p.brand === b.name), li = lineCover(b); return `
       <a class="brand-card glass rv" href="#/marka/${b.k}"><span class="sec-num">${ps.length} ${L_('itemWord', 'termék')}</span><h3>${esc(b.name)}</h3><p>${esc(b.tag)}</p>
       ${li ? `<div class="brand-cover" style="background-image:url(${li})"></div>` : `<div class="imgs">${ps.slice(0, 5).map(p => `<img src="${pimg(p)}" alt="" loading="lazy">`).join('')}</div>`}</a>`; }).join('')}</div>
   </section>` : ''}
@@ -698,7 +698,7 @@ function route() {
   app.innerHTML = view();
   drawer(false);
   $('#navLinks').classList.remove('open');
-  $$('#navLinks a').forEach(a => a.classList.toggle('on', a.getAttribute('href').slice(2).split('/')[0] === (r === 'termek' ? (KAT === 'ws' ? 'webshop' : 'termekek') : r === 'marka' ? 'markak' : r)));
+  $$('#navLinks a:not(.nav-kulso)').forEach(a => a.classList.toggle('on', a.getAttribute('href').slice(2).split('/')[0] === (r === 'termek' ? (KAT === 'ws' ? 'webshop' : 'termekek') : r === 'marka' ? 'markak' : r)));
   document.body.classList.toggle('deep', r !== '');
   document.title = r ? ($('h1')?.textContent || C.name) + ' · ' + C.name : C.name;
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -824,12 +824,15 @@ async function eloTartalom() {
   SKINS.forEach(x => { x.img = img(x.img); });
   cart.load(); renderCart();
   document.body.classList.add('layout-' + LY());
-  if (((window.LAYOUT_META || {})[LY()] || {}).light) document.body.classList.add('light');
+  if (C.vilagos || ((window.LAYOUT_META || {})[LY()] || {}).light) document.body.classList.add('light');
+  // külső menüpontok (pl. a webshopban „Szalon” → a szalon oldala, másik domain)
+  for (const k of C.navKulso || []) { const a = document.createElement('a'); a.href = k.url; a.className = 'nav-kulso'; a.textContent = k.nev; $('#navLinks').append(a); }
   $('.drawer-head h3').textContent = L_('cartTitle', 'Kosarad');
   const navI = $('#navLinks a[href="#/termekek"]'); if (navI) navI.textContent = L_('itemsNav', 'Termékek');
   // lassú hálózaton a felépítések szkriptjei (layouts*.js, alapok*.js) még töltődhetnek – a kirajzolás megvárja őket
   if (document.readyState === 'loading') await new Promise((r) => addEventListener('DOMContentLoaded', r, { once: true }));
-  if (((window.LAYOUT_META || {})[LY()] || {}).light) document.body.classList.add('light');
+  if (C.vilagos || ((window.LAYOUT_META || {})[LY()] || {}).light) document.body.classList.add('light');
+  if (C.webshop && C.webshop.kulso && /^#\/(webshop|penztar)/.test(location.hash)) { location.replace(C.webshop.kulso); return; }   // a webshop külön oldalon (másik domain)
   if (C.webshop) { const kell = /^#\/(webshop|termek\/|penztar)/.test(location.hash) || cart.items.some((i) => wsTermek(i.id)); const w = wsBetolt(); if (kell) await w; }
   route();
   addEventListener('scroll', () => $('#nav').classList.toggle('scrolled', scrollY > 40), { passive: true });

@@ -332,6 +332,13 @@ body.rc-t-pezsgo, .rc-pezsgo {
 .rc-pezsgo .rc-welcome b { filter: drop-shadow(0 2px 16px rgba(255,250,243,.95)) !important; text-shadow: none !important; }
 .rc-pezsgo .rc-welcome small { color: var(--rcA4); }
 
+/* OLÍVA – természetes, hétköznapi szalon: bézs alap, olívazöld, finom arany (Ági kérése, 2026-10-20: az estheticline.hu olívazöldje) */
+body.rc-t-oliva, .rc-oliva {
+  --rcA0: #353d1f; --rcA1: #6b7a3a; --rcA1r: 196,186,128; --rcA2: #b89a52; --rcA2r: 184,154,82; --rcA3: #56622c; --rcA4: #46502a; --rcA4r: 70,80,42;
+  --rcD0: #f3eee3; --rcD0r: 243,238,227; --rcD1: #fbf8f1; --rcD1r: 251,248,241; --rcT1: #2c2e1f; --rcT2: #5e5e48; --rcINK: #fbf8f1; }
+.rc-oliva .rc-welcome b { filter: drop-shadow(0 2px 16px rgba(251,248,241,.95)) !important; text-shadow: none !important; }
+.rc-oliva .rc-welcome small { color: var(--rcA4); }
+
 /* ===================== sima ajtónyitás (teljesítmény) ===================== */
 /* a szárnyak és a köszöntő előre saját rétegen – a nyitás első képkockájában nem kell újrarajzolni őket */
 .rc-doors i { will-change: transform; } .rc-doors .rc-welcome { will-change: opacity; }
